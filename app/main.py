@@ -53,15 +53,90 @@ app.include_router(verification.router)
 app.include_router(batches.router)
 
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 import os
 
 # Mount Static Files
 static_dir = os.path.join(os.path.dirname(__file__), "../static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-# --- Routes ---
-@app.get("/")
-async def root():
-    return FileResponse(os.path.join(static_dir, "index.html"))
+# Configure Templates
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "../templates"))
 
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends
+from app.database import get_db
+from psycopg2.extras import RealDictCursor
+
+# --- UI Routes ---
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request, db: RealDictCursor = Depends(get_db)):
+    # Fetch stats for Regulator
+    db.execute("SELECT COUNT(*) as total FROM batches")
+    total_batches = db.fetchone()['total']
+    
+    # Simple compliance rate (mock or based on events)
+    stats = {
+        "batches": total_batches,
+        "compliance": 98.7,
+        "pending": 0,
+        "recalls": 0
+    }
+    return templates.TemplateResponse("dashboard.html", {"request": request, "role": "Regulator", "stats": stats})
+
+@app.get("/manufacturer", response_class=HTMLResponse)
+async def manufacturer_ui(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request, "role": "Manufacturer"})
+
+@app.get("/cnf", response_class=HTMLResponse)
+async def cnf_ui(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request, "role": "C&F Agent"})
+
+@app.get("/distributor", response_class=HTMLResponse)
+async def distributor_ui(request: Request, db: RealDictCursor = Depends(get_db)):
+    # Fetch batches relevant for distributors
+    db.execute("""
+        SELECT b.*, p.name as drug_name 
+        FROM batches b
+        JOIN products p ON b.product_id = p.product_id
+        WHERE b.current_status NOT IN ('SOLD_TO_CONSUMER', 'RECEIVED_AT_STORE')
+    """)
+    batches = db.fetchall()
+    return templates.TemplateResponse("dashboard.html", {"request": request, "role": "Distributor", "batches": batches})
+
+@app.get("/fda_cdf", response_class=HTMLResponse)
+async def fda_cdf_ui(request: Request, db: RealDictCursor = Depends(get_db)):
+    # Fetch all events as an audit log for FDA
+    db.execute("""
+        SELECT e.*, b.batch_id, u.username
+        FROM batch_events e
+        JOIN batches b ON e.batch_id = b.batch_id
+        LEFT JOIN users u ON e.user_id = u.user_id
+        ORDER BY e.timestamp DESC LIMIT 50
+    """)
+    events = db.fetchall()
+    return templates.TemplateResponse("dashboard.html", {"request": request, "role": "FDA CDF", "events": events})
+
+@app.get("/pharmacist", response_class=HTMLResponse)
+async def pharmacist_ui(request: Request, db: RealDictCursor = Depends(get_db)):
+    from datetime import date
+    today = date.today()
+    # Fetch mock prescriptions or recent sales
+    prescriptions = [
+        {"patient": "Sipho", "drug": "Flue-Combo", "batch": "BATCH-5400", "date": "2025-09-13"},
+        {"patient": "John Smith", "drug": "Insulin Glargine", "batch": "BATCH-003", "date": "2025-08-02"},
+    ]
+    # Also fetch batches at store
+    db.execute("""
+        SELECT b.*, p.name as drug_name 
+        FROM batches b
+        JOIN products p ON b.product_id = p.product_id
+        WHERE b.current_status = 'RECEIVED_AT_STORE'
+    """)
+    inventory = db.fetchall()
+    return templates.TemplateResponse("dashboard.html", {"request": request, "role": "Pharmacist", "prescriptions": prescriptions, "inventory": inventory, "today": today})
+
+@app.get("/verify", response_class=HTMLResponse)
+async def verify_ui(request: Request):
+    return templates.TemplateResponse("verify.html", {"request": request, "active_page": "verify"})

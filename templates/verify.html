@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Product authenticity - PharmTrace SA{% endblock %}
+
+{% block content %}
+<div class="main-card">
+    <div class="dashboard-title">
+        <div style="background: var(--stat-blue); padding: 8px; border-radius: 8px; color: white;">
+            <i data-feather="maximize"></i>
+        </div>
+        Product Verification
+    </div>
+
+    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+            Verify the authenticity of your pharmaceutical products using the batch ID or QR code.
+        </p>
+
+        <div style="background: #f8fafc; padding: 2.5rem; border-radius: 16px; border: 1px solid var(--border);">
+            <div class="form-group">
+                <label style="text-align: left;">Enter Batch ID</label>
+                <div class="input-with-button">
+                    <input type="text" id="verifyInput" placeholder="BATCH-XXX-XXX"
+                        style="font-size: 1.2rem; padding: 15px;">
+                    <button class="qr-scan-btn" style="height: 40px; top: 10px;" onclick="triggerQRScan('verifyInput')">
+                        <i data-feather="maximize"></i> Scan QR
+                    </button>
+                </div>
+            </div>
+            <button onclick="verifyProduct()" class="action-btn"
+                style="background: #0f4c81; font-size: 1.1rem; padding: 15px;">
+                Verify Authenticity
+            </button>
+        </div>
+
+        <div id="verificationResult" style="margin-top:2rem;"></div>
+        <div id="timelineView" class="timeline"></div>
+    </div>
+</div>
+
+<script>
+    window.currentRole = 'consumer';
+</script>
+{% endblock %}

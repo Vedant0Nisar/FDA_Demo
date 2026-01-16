@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- REGULATOR (Command and Control) -->
+{% if role == "Regulator" %}
+<div class="main-card">
+    <div class="dashboard-title">
+        <div style="background: var(--stat-blue); padding: 8px; border-radius: 8px; color: white;">
+            <i data-feather="shield"></i>
+        </div>
+        Command Center
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <span class="stat-number">{{ stats.batches }}</span>
+            <span class="stat-label">Total Drug Batches</span>
+            <span class="stat-sub">↑ Real-time tracking</span>
+        </div>
+        <div class="stat-card green">
+            <span class="stat-number">{{ stats.compliance }}%</span>
+            <span class="stat-label">Compliance Rate</span>
+            <span class="stat-sub">↑ 2.1% improvement</span>
+        </div>
+        <div class="stat-card orange">
+            <span class="stat-number">{{ stats.pending }}</span>
+            <span class="stat-label">Pending Approvals</span>
+            <span class="stat-sub">Requires your review</span>
+        </div>
+        <div class="stat-card red">
+            <span class="stat-number">{{ stats.recalls }}</span>
+            <span class="stat-label">Active Recalls</span>
+            <span class="stat-sub">No safety issues</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- MANUFACTURER -->
+{% if role == "Manufacturer" %}
+<div class="main-card">
+    <div class="dashboard-title">
+        <div style="background: #2563eb; padding: 8px; border-radius: 8px; color: white;">
+            <i data-feather="box"></i>
+        </div>
+        Manufacturer Portal
+    </div>
+
+    <div
+        style="padding: 2rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: #1e293b; margin-bottom: 1.5rem;">Create New Batch</h3>
+
+        <form id="createBatchForm" style="max-width: 600px; margin: 0 auto;">
+            <div class="form-group">
+                <label>Batch ID</label>
+                <input type="text" id="batchId" placeholder="e.g. BATCH-2025-001" required>
+            </div>
+            <div class="form-group">
+                <label>Product GTIN</label>
+                <input type="text" id="gtin" value="GTIN-PARA-500" required>
+            </div>
+            <div class="form-group">
+                <label>Manufacturer License</label>
+                <input type="text" id="license" value="LIC-ABC-001" required>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Manufacturing Date</label>
+                    <input type="date" id="mfgDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date</label>
+                    <input type="date" id="expDate" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Batch Size</label>
+                <input type="number" id="size" value="1000" required>
+            </div>
+            <button type="button" onclick="createBatch()" class="primary-btn"
+                style="width: 100%; padding: 14px; font-size: 1.1rem;">Create Batch & Mint 🪙</button>
+        </form>
+
+        <div id="batchResult" style="margin-top: 20px;"></div>
+    </div>
+</div>
+
+<script>
+    window.currentRole = 'manufacturer';
+</script>
+{% endif %}
+
+<!-- FDA CDF -->
+{% if role == "FDA CDF" %}
+<div class="main-card">
+    <div class="dashboard-title">
+        <div style="background: var(--stat-green); padding: 8px; border-radius: 8px; color: white;">
+            <i data-feather="file-text"></i>
+        </div>
+        FDA CDF Oversight
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <h3>Blockchain Audit Log</h3>
+        <p style="color: grey; margin-bottom: 2rem;">Real-time event stream from the pharmaceutical supply chain.</p>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                        <th style="padding: 12px;">Timestamp</th>
+                        <th style="padding: 12px;">Batch ID</th>
+                        <th style="padding: 12px;">Action</th>
+                        <th style="padding: 12px;">User</th>
+                        <th style="padding: 12px;">Blockchain Hash</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 15px 12px; white-space: nowrap;">{{ event.timestamp.strftime('%Y-%m-%d
+                            %H:%M') }}</td>
+                        <td style="padding: 15px 12px;"><strong>{{ event.batch_id }}</strong></td>
+                        <td style="padding: 15px 12px;">
+                            <span
+                                style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem;">{{
+                                event.action_type }}</span>
+                        </td>
+                        <td style="padding: 15px 12px;">{{ event.username or 'System' }}</td>
+                        <td style="padding: 15px 12px;">
+                            <small style="font-family: monospace; color: grey;">
+                                {{ (event.blockchain_tx_id[:20] + '...') if event.blockchain_tx_id else 'Pending
+                                Registration' }}
+                            </small>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="padding: 2rem; text-align: center; color: grey;">No events recorded yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- C&F AGENT -->
+{% if role == "C&F Agent" %}
+<div class="main-card">
+    <div class="dashboard-title">
+        <div style="background: #3b82f6; padding: 8px; border-radius: 8px; color: white;">
+            <i data-feather="truck"></i>
+        </div>
+        C&F Agent Portal
+    </div>
+
+    <div
+        style="padding: 2rem; background: #f0f7ff; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: #1e3a8a; margin-bottom: 1.5rem;">Update Status</h3>
+        <p style="color: #1e40af; margin-bottom: 1.5rem;">Scan or enter batch ID to update its logistics status.</p>
+
+        <div style="max-width: 600px; margin: 0 auto;">
+            <div class="form-group">
+                <label>Scan QR Code (Enter Batch ID)</label>
+                <div class="input-with-button">
+                    <input type="text" id="scanInput" placeholder="Scan or type Batch ID...">
+                    <button class="qr-scan-btn" onclick="triggerQRScan('scanInput')">
+                        <i data-feather="maximize"></i> Scan QR
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Action</label>
+                <select id="actionType">
+                    <option value="RECEIVED_AT_CNF">RECEIVED AT CNF</option>
+                    <option value="DISPATCHED_TO_DISTRIBUTOR">DISPATCHED TO DISTRIBUTOR</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>🌡️ Temperature (°C)</label>
+                    <input type="text" id="logTemp" placeholder="e.g. 4.5">
+                </div>
+                <div class="form-group">
+                    <label>🚛 Vehicle ID</label>
+                    <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>📥 Ingress Quality</label>
+                    <input type="text" id="logIngress" placeholder="Passed / Failed">
+                </div>
+                <div class="form-group">
+                    <label>📤 Egress Quality</label>
+                    <input type="text" id="logEgress" placeholder="Passed / Failed">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai hub">
+            </div>
+
+            <button onclick="submitAction()" class="action-btn" style="background: #3b82f6;">Update Status & Mine Block
+                ⛏️</button>
+            <div id="actionResult" style="margin-top:15px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.currentRole = 'cnf';
+</script>
+{% endif %}
+<!-- DISTRIBUTOR -->
+{% if role == "Distributor" %}
+<div class="main-card">
+    <div class="dashboard-title">
+        <div style="background: var(--stat-orange); padding: 8px; border-radius: 8px; color: white;">
+            <i data-feather="truck"></i>
+        </div>
+        Distribution Network Control
+    </div>
+
+    <div class="stats-grid" style="margin-bottom: 2rem;">
+        <div class="stat-card orange">
+            <span class="stat-number">{{ batches|length }}</span>
+            <span class="stat-label">Batches to Process</span>
+        </div>
+        <div class="stat-card blue">
+            <span class="stat-number">234</span>
+            <span class="stat-label">Hospital Partners</span>
+        </div>
+        <div class="stat-card green">
+            <span class="stat-number">99.8%</span>
+            <span class="stat-label">Compliance</span>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+        <!-- Distribution Form -->
+        <div
+            style="padding: 1.5rem; background: #fffcf0; border-radius: 12px; border: 1px solid #feebc8; height: fit-content;">
+            <h3 style="margin-top: 0; color: #7b341e; margin-bottom: 1.5rem;">Update Logistics</h3>
+
+            <div class="form-group">
+                <label>Scan QR Code (Enter Batch ID)</label>
+                <div class="input-with-button">
+                    <input type="text" id="scanInput" placeholder="Scan or type Batch ID...">
+                    <button class="qr-scan-btn" onclick="triggerQRScan('scanInput')">
+                        <i data-feather="maximize"></i> Scan QR
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Action</label>
+                <select id="actionType">
+                    <option value="RECEIVED_AT_DISTRIBUTOR">RECEIVED AT DISTRIBUTOR</option>
+                    <option value="DISPATCHED_TO_RETAILER">DISPATCHED TO RETAILER</option>
+                    <option value="IN_TRANSIT">IN TRANSIT</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>🌡️ Temperature (°C)</label>
+                    <input type="text" id="logTemp" placeholder="e.g. 4.5">
+                </div>
+                <div class="form-group">
+                    <label>🚛 Vehicle ID</label>
+                    <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>📥 Ingress Quality</label>
+                    <input type="text" id="logIngress" placeholder="Passed / Failed">
+                </div>
+                <div class="form-group">
+                    <label>📤 Egress Quality</label>
+                    <input type="text" id="logEgress" placeholder="Passed / Failed">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" id="actionNote" placeholder="e.g. Good condition">
+            </div>
+
+            <button onclick="submitAction()" class="action-btn" style="background: var(--stat-orange);">Update Status &
+                Mine Block ⛏️</button>
+            <div id="actionResult" style="margin-top:15px;"></div>
+        </div>
+
+        <!-- Working Batches Table -->
+        <div>
+            <h3>Active Inventory</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                        <th style="padding: 10px;">Batch ID</th>
+                        <th style="padding: 10px;">Drug Name</th>
+                        <th style="padding: 10px;">Status</th>
+                        <th style="padding: 10px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 15px 10px;"><strong>{{ batch.batch_id }}</strong></td>
+                        <td style="padding: 15px 10px;">{{ batch.drug_name }}</td>
+                        <td style="padding: 15px 10px;">
+                            <span
+                                style="background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 50px; font-size: 0.85rem;">{{
+                                batch.current_status }}</span>
+                        </td>
+                        <td style="padding: 15px 10px;">
+                            <button class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem;"
+                                onclick="document.getElementById('scanInput').value='{{ batch.batch_id }}'">Manage</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="padding: 2rem; text-align: center; color: grey;">No active batches in
+                            transit.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.currentRole = 'distributor';
+</script>
+{% endif %}
+
+<!-- PHARMACIST -->
+{% if role == "Pharmacist" %}
+<div class="main-card">
+    <div class="dashboard-title">
+        <div style="background: #8b5cf6; padding: 8px; border-radius: 8px; color: white;">
+            <i data-feather="link"></i>
+        </div>
+        Pharmacy & Retail Portal
+    </div>
+
+    <div class="stats-grid" style="margin-bottom: 2rem;">
+        <div class="stat-card blue">
+            <span class="stat-number">{{ prescriptions|length }}</span>
+            <span class="stat-label">New Prescriptions</span>
+        </div>
+        <div class="stat-card green">
+            <span class="stat-number">{{ inventory|length }}</span>
+            <span class="stat-label">Batches in Stock</span>
+        </div>
+        <div class="stat-card orange">
+            <span class="stat-number">1,042</span>
+            <span class="stat-label">Units Dispensed</span>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+        <!-- Retail Actions -->
+        <div
+            style="padding: 1.5rem; background: #f5f3ff; border-radius: 12px; border: 1px solid #ddd6fe; height: fit-content;">
+            <h3 style="margin-top: 0; color: #4c1d95; margin-bottom: 1.5rem;">Retailer Portal</h3>
+
+            <div class="form-group">
+                <label>Scan QR Code (Enter Batch ID)</label>
+                <div class="input-with-button">
+                    <input type="text" id="scanInput" placeholder="Scan or type ID...">
+                    <button class="qr-scan-btn" onclick="triggerQRScan('scanInput')">
+                        <i data-feather="maximize"></i> Scan QR
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Action</label>
+                <select id="actionType">
+                    <option value="RECEIVED_AT_STORE">RECEIVED AT STORE</option>
+                    <option value="SOLD_TO_CONSUMER">SOLD TO CONSUMER</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>🌡️ Temperature (°C)</label>
+                    <input type="text" id="logTemp" placeholder="e.g. 4.5">
+                </div>
+                <div class="form-group">
+                    <label>🚛 Vehicle ID</label>
+                    <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>📥 Ingress Quality</label>
+                    <input type="text" id="logIngress" placeholder="Passed / Failed">
+                </div>
+                <div class="form-group">
+                    <label>📤 Egress Quality</label>
+                    <input type="text" id="logEgress" placeholder="Passed / Failed">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai Hub">
+            </div>
+
+            <button onclick="submitAction()" class="action-btn" style="background: #8b5cf6;">Update Status & Mine Block
+                ⛏️</button>
+            <div id="actionResult" style="margin-top:15px;"></div>
+        </div>
+
+        <!-- Inventory and Prescriptions -->
+        <div>
+            <h3>Recent Activity</h3>
+            <div style="margin-top: 1rem;">
+                {% for rx in prescriptions %}
+                <div
+                    style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 1rem 0;">
+                    <div>
+                        <strong style="display: block; font-size: 1.1rem;">{{ rx.patient }}</strong>
+                        <span style="color: grey;">{{ rx.drug }} ({{ rx.batch }})</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: bold; color: var(--stat-green);">Dispensed</div>
+                        <div style="font-size: 0.8rem; color: grey;">{{ rx.date }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h3 style="margin-top: 2rem;">Current Stock</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                        <th style="padding: 10px;">Batch ID</th>
+                        <th style="padding: 10px;">Drug Name</th>
+                        <th style="padding: 10px;">Expiry</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px 10px;"><strong>{{ item.batch_id }}</strong></td>
+                        <td style="padding: 12px 10px;">{{ item.drug_name }}</td>
+                        <td style="padding: 12px 10px;" class="{% if item.exp_date < today %}expired-text{% endif %}">
+                            {{ item.exp_date }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="padding: 2rem; text-align: center; color: grey;">No stock currently at
+                            retail.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.currentRole = 'retailer';
+</script>
+{% endif %}
+
+{% endblock %}
