@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDA TrustChain Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>Role Selector</h3>
+            <button class="role-btn active" onclick="switchRole('manufacturer')">🏭 Manufacturer</button>
+            <button class="role-btn" onclick="switchRole('cnf')">🚛 C&F Agent</button>
+            <button class="role-btn" onclick="switchRole('distributor')">📦 Distributor</button>
+            <button class="role-btn" onclick="switchRole('retailer')">🏥 Retailer</button>
+            <button class="role-btn" onclick="switchRole('consumer')">🔍 Consumer Verification</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <!-- Manufacturer View -->
+            <div id="manufacturer" class="section active">
+                <div class="header">
+                    <h2>Create New Batch</h2>
+                    <p>Register a new product batch on the blockchain.</p>
+                </div>
+
+                <form id="createBatchForm">
+                    <div class="form-group">
+                        <label>Batch ID</label>
+                        <input type="text" id="batchId" placeholder="e.g. BATCH-2025-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Product GTIN</label>
+                        <input type="text" id="gtin" value="GTIN-PARA-500" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Manufacturer License</label>
+                        <input type="text" id="license" value="LIC-ABC-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Manufacturing Date</label>
+                        <input type="date" id="mfgDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input type="date" id="expDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Batch Size</label>
+                        <input type="number" id="size" value="1000" required>
+                    </div>
+                    <button type="button" onclick="createBatch()" class="primary-btn">Create Batch & Mint 🪙</button>
+                </form>
+
+                <div id="batchResult" style="margin-top: 20px;"></div>
+
+
+            </div>
+
+            <!-- Supply Chain Worker View (Shared for C&F, Dist, Retailer) -->
+            <div id="supply-worker" class="section">
+                <div class="header">
+                    <h2 id="workerTitle">Supply Chain Action</h2>
+                    <p>Scan a batch to update its status.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Scan QR Code (Enter Batch ID)</label>
+                    <input type="text" id="scanInput" placeholder="Scan or type Batch ID...">
+                </div>
+
+                <div class="form-group">
+                    <label>Action</label>
+                    <select id="actionType">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Logistics Details -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>🌡️ Temperature (°C)</label>
+                        <input type="text" id="logTemp" placeholder="e.g. 4.5">
+                    </div>
+                    <div class="form-group">
+                        <label>🚛 Vehicle ID</label>
+                        <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>📥 Ingress Quality</label>
+                        <input type="text" id="logIngress" placeholder="Passed / Failed">
+                    </div>
+                    <div class="form-group">
+                        <label>📤 Egress Quality</label>
+                        <input type="text" id="logEgress" placeholder="Passed / Failed">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai Hub">
+                </div>
+
+                <button onclick="submitAction()" class="action-btn">Update Status & Mine Block ⛏️</button>
+
+                <div id="actionResult" style="margin-top:20px;"></div>
+            </div>
+
+            <!-- Consumer Verification View -->
+            <div id="consumer" class="section">
+                <div class="header">
+                    <h2>Product Verification</h2>
+                    <p>Verify authenticity and view complete history.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Enter Batch ID</label>
+                    <input type="text" id="verifyInput" placeholder="BATCH-XXX-XXX">
+                </div>
+                <button onclick="verifyProduct()" class="action-btn" style="background: var(--accent);">Verify
+                    Authenticity</button>
+
+                <div id="verificationResult" style="margin-top:20px;"></div>
+                <div id="timelineView" class="timeline"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

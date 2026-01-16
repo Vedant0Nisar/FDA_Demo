@@ -1,0 +1,193 @@
+:root {
+    --bg-color: #0d1117;
+    --card-bg: #161b22;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --accent: #58a6ff;
+    --success: #2ea043;
+    --danger: #da3633;
+    --border: #30363d;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+}
+
+/* Sidebar */
+.sidebar {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    height: fit-content;
+}
+
+.role-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 12px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    transition: all 0.2s;
+}
+
+.role-btn:hover {
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--accent);
+}
+
+.role-btn.active {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+}
+
+.section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+input, select, textarea {
+    width: 100%;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+button.action-btn {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 10px;
+}
+
+button.action-btn:hover {
+    background: #238636;
+}
+
+/* Cards & Timeline */
+.timeline {
+    margin-top: 20px;
+    border-left: 2px solid var(--border);
+    padding-left: 20px;
+}
+
+.event-card {
+    background: #0d1117;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+.event-card::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 20px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.event-title {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.event-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+.meta-row {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    margin: 2px 0;
+    padding-left: 5px;
+    border-left: 2px solid var(--border);
+}
+
+/* QR Code Display */
+#qr-display {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#qr-display img {
+    width: 200px;
+    height: 200px;
+}

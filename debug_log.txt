@@ -1,0 +1,203 @@
+\n[2026-01-16 06:51:53.512339] Request Received: Batch-786\nDEBUG: Checking Manufacturer\nDEBUG: Found Mfg: RealDictRow([('manufacturer_id', 1), ('name', 'ABC Pharma')])\nDEBUG: Found Product: RealDictRow([('product_id', 1)])\nDEBUG: Inserting Batch\nDEBUG: Logging Event\n\n[2026-01-16 10:21:19.028373] Request Received: batch-789789789\nDEBUG: Checking Manufacturer\nDEBUG: Found Mfg: RealDictRow([('manufacturer_id', 1), ('name', 'ABC Pharma')])\nDEBUG: Found Product: RealDictRow([('product_id', 1)])\nDEBUG: Inserting Batch\nDEBUG: Logging Event\n\n[2026-01-16 10:25:13.200867] Request Received: batch-90909090\nDEBUG: Checking Manufacturer\nDEBUG: Found Mfg: RealDictRow([('manufacturer_id', 1), ('name', 'ABC Pharma')])\nDEBUG: Found Product: RealDictRow([('product_id', 1)])\nDEBUG: Inserting Batch\nDEBUG: Logging Event\n\n[2026-01-16 10:30:23.675067] Request Received: 646546546546546546\nDEBUG: Checking Manufacturer\nDEBUG: Found Mfg: RealDictRow([('manufacturer_id', 1), ('name', 'ABC Pharma')])\nDEBUG: Found Product: RealDictRow([('product_id', 1)])\n\nCRITICAL ERROR: HTTPConnectionPool(host='127.0.0.1', port=7545): Max retries exceeded with url: / (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))\nTraceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "D:\Python\3.10\lib\http\client.py", line 1271, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "D:\Python\3.10\lib\http\client.py", line 1031, in _send_output
+    self.send(msg)
+  File "D:\Python\3.10\lib\http\client.py", line 969, in send
+    self.connect()
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 219, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\adapters.py", line 644, in send
+    resp = conn.urlopen(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='127.0.0.1', port=7545): Max retries exceeded with url: / (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\app\routers\batches.py", line 75, in create_batch
+    tx_hash = BlockchainService.register_product(request.batch_id, f"GTIN-{request.product_gtin}", details)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\app\services\blockchain.py", line 29, in register_product
+    raise e
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\app\services\blockchain.py", line 24, in register_product
+    ).transact({'from': cls.start_account})
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\contract\contract.py", line 323, in transact
+    return transact_with_contract_function(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\contract\utils.py", line 172, in transact_with_contract_function
+    txn_hash = w3.eth.send_transaction(transact_transaction)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\eth\eth.py", line 382, in send_transaction
+    return self._send_transaction(transaction)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\module.py", line 75, in caller
+    result = w3.manager.request_blocking(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 325, in request_blocking
+    response = self._make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 213, in _make_request
+    return request_func(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\gas_price_strategy.py", line 96, in middleware
+    latest_block = w3.eth.get_block("latest")
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\eth\eth.py", line 409, in get_block
+    return self._get_block(block_identifier, full_transactions)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\module.py", line 75, in caller
+    result = w3.manager.request_blocking(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 325, in request_blocking
+    response = self._make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 213, in _make_request
+    return request_func(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\gas_price_strategy.py", line 101, in middleware
+    return make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\formatting.py", line 126, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\attrdict.py", line 43, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\formatting.py", line 126, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\formatting.py", line 126, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\buffered_gas_estimate.py", line 43, in middleware
+    return make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\exception_retry_request.py", line 125, in middleware
+    return make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\providers\rpc.py", line 90, in make_request
+    raw_response = make_post_request(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\_utils\request.py", line 114, in make_post_request
+    response = get_response_from_post_request(endpoint_uri, data=data, *args, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\_utils\request.py", line 107, in get_response_from_post_request
+    response = session.post(endpoint_uri, *args, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\sessions.py", line 637, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\adapters.py", line 677, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=7545): Max retries exceeded with url: / (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+\n[2026-01-16 10:31:14.869058] Request Received: 646546546546546546\nDEBUG: Checking Manufacturer\nDEBUG: Found Mfg: RealDictRow([('manufacturer_id', 1), ('name', 'ABC Pharma')])\nDEBUG: Found Product: RealDictRow([('product_id', 1)])\n\nCRITICAL ERROR: HTTPConnectionPool(host='127.0.0.1', port=7545): Max retries exceeded with url: / (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))\nTraceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "D:\Python\3.10\lib\http\client.py", line 1271, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "D:\Python\3.10\lib\http\client.py", line 1031, in _send_output
+    self.send(msg)
+  File "D:\Python\3.10\lib\http\client.py", line 969, in send
+    self.connect()
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connection.py", line 219, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\adapters.py", line 644, in send
+    resp = conn.urlopen(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='127.0.0.1', port=7545): Max retries exceeded with url: / (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\app\routers\batches.py", line 75, in create_batch
+    tx_hash = BlockchainService.register_product(request.batch_id, f"GTIN-{request.product_gtin}", details)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\app\services\blockchain.py", line 29, in register_product
+    raise e
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\app\services\blockchain.py", line 24, in register_product
+    ).transact({'from': cls.start_account})
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\contract\contract.py", line 323, in transact
+    return transact_with_contract_function(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\contract\utils.py", line 172, in transact_with_contract_function
+    txn_hash = w3.eth.send_transaction(transact_transaction)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\eth\eth.py", line 382, in send_transaction
+    return self._send_transaction(transaction)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\module.py", line 75, in caller
+    result = w3.manager.request_blocking(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 325, in request_blocking
+    response = self._make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 213, in _make_request
+    return request_func(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\gas_price_strategy.py", line 96, in middleware
+    latest_block = w3.eth.get_block("latest")
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\eth\eth.py", line 409, in get_block
+    return self._get_block(block_identifier, full_transactions)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\module.py", line 75, in caller
+    result = w3.manager.request_blocking(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 325, in request_blocking
+    response = self._make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\manager.py", line 213, in _make_request
+    return request_func(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\gas_price_strategy.py", line 101, in middleware
+    return make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\formatting.py", line 126, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\attrdict.py", line 43, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\formatting.py", line 126, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\formatting.py", line 126, in middleware
+    response = make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\buffered_gas_estimate.py", line 43, in middleware
+    return make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\middleware\exception_retry_request.py", line 125, in middleware
+    return make_request(method, params)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\providers\rpc.py", line 90, in make_request
+    raw_response = make_post_request(
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\_utils\request.py", line 114, in make_post_request
+    response = get_response_from_post_request(endpoint_uri, data=data, *args, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\web3\_utils\request.py", line 107, in get_response_from_post_request
+    response = session.post(endpoint_uri, *args, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\sessions.py", line 637, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "D:\python projects\FDA\Block_chain\FDA_Demo\venv\lib\site-packages\requests\adapters.py", line 677, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=7545): Max retries exceeded with url: / (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=7545): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+\n[2026-01-16 10:32:01.909575] Request Received: 646546546546546546\nDEBUG: Checking Manufacturer\nDEBUG: Found Mfg: RealDictRow([('manufacturer_id', 1), ('name', 'ABC Pharma')])\nDEBUG: Found Product: RealDictRow([('product_id', 1)])\nDEBUG: Inserting Batch\nDEBUG: Logging Event\n
