@@ -170,6 +170,21 @@ def seed_data(conn):
                 ON CONFLICT (retailer_id) DO NOTHING;
             """, (r_id, name, city, lat, lng))
 
+        # 6. Users (Adding Mobile Roles)
+        users = [
+            ("admin", "System Administrator", "ADMIN", "support@fda.gov"),
+            ("inspector_01", "John Inspector", "Inspector", "inspector1@fda.gov"),
+            ("auditor_01", "Alice Auditor", "Auditor", "auditor1@fda.gov"),
+            ("man_operator", "Manu Operator", "OPERATOR", "operator@abcpharma.com")
+        ]
+
+        for uname, fname, role, email in users:
+            cur.execute("""
+                INSERT INTO users (username, full_name, role, email)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (username) DO NOTHING;
+            """, (uname, fname, role, email))
+
         conn.commit()
         print("Sample data seeded successfully.")
         

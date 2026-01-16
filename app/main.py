@@ -44,13 +44,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 #         content={"detail": "An internal server error occurred. Please contact support."},
 #     )
 
-from app.routers import verification, batches
+from app.routers import verification, batches, mobile
 
 # ... (Previous imports)
 
 # Include Routers
 app.include_router(verification.router)
 app.include_router(batches.router)
+app.include_router(mobile.router)
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates

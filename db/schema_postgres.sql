@@ -113,7 +113,18 @@ CREATE TABLE IF NOT EXISTS verification_logs (
     notes TEXT
 );
 
--- 5. Stored Functions for Logic
+-- 5. Alert System (Fraud/Reporting)
+CREATE TABLE IF NOT EXISTS alerts (
+    alert_id SERIAL PRIMARY KEY,
+    batch_id VARCHAR(50) REFERENCES batches(batch_id),
+    node_id VARCHAR(100), -- The node/location where the alert was triggered
+    status VARCHAR(50) DEFAULT 'PENDING', -- 'PENDING', 'INVESTIGATING', 'RESOLVED'
+    severity VARCHAR(20) DEFAULT 'HIGH',
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Stored Functions for Logic
 
 -- Function to verify a product scan
 CREATE OR REPLACE FUNCTION verify_product(p_batch_id VARCHAR)
