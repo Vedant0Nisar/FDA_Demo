@@ -61,6 +61,22 @@
                 <input type="text" id="gtin" value="GTIN-PARA-500" required>
             </div>
             <div class="form-group">
+                <label>Operator Name</label>
+                <input type="text" id="operatorName" placeholder="e.g. John Doe" required>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>📍 Latitude</label>
+                    <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Fetching...">
+                </div>
+                <div class="form-group">
+                    <label>📍 Longitude</label>
+                    <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Fetching...">
+                </div>
+            </div>
+            <div class="form-group">
                 <label>Manufacturer License</label>
                 <input type="text" id="license" value="LIC-ABC-001" required>
             </div>
@@ -123,9 +139,43 @@
                             %H:%M') }}</td>
                         <td style="padding: 15px 12px;"><strong>{{ event.batch_id }}</strong></td>
                         <td style="padding: 15px 12px;">
+                            {% if 'TAMPER' in event.action_type %}
                             <span
-                                style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem;">{{
-                                event.action_type }}</span>
+                                style="background: #fee2e2; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #fecaca; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                ⛔ {{ event.action_type }}
+                            </span>
+                            {% elif 'PRODUCED' in event.action_type %}
+                            <span
+                                style="background: #e0f2fe; color: #075985; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #bae6fd; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                📦 {{ event.action_type }}
+                            </span>
+                            {% elif 'CNF' in event.action_type %}
+                            <span
+                                style="background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #86efac; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                🚛 {{ event.action_type }}
+                            </span>
+                            {% elif 'DISPATCHED_TO_RETAILER' in event.action_type %}
+                            <span
+                                style="background: #fce7f3; color: #be185d; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #fbcfe8; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                🚚 {{ event.action_type }}
+                            </span>
+                            {% elif 'DISTRIBUTOR' in event.action_type %}
+                            <span
+                                style="background: #ffedd5; color: #9a3412; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #fed7aa; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                🏭 {{ event.action_type }}
+                            </span>
+                            {% elif 'RETAIL' in event.action_type or 'STORE' in event.action_type or 'CONSUMER' in
+                            event.action_type %}
+                            <span
+                                style="background: #f3e8ff; color: #6b21a8; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #d8b4fe; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                💊 {{ event.action_type }}
+                            </span>
+                            {% else %}
+                            <span
+                                style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #cbd5e1;">
+                                📝 {{ event.action_type }}
+                            </span>
+                            {% endif %}
                         </td>
                         <td style="padding: 15px 12px;">{{ event.username or 'System' }}</td>
                         <td style="padding: 15px 12px;">
@@ -155,7 +205,7 @@
         <div style="background: #3b82f6; padding: 8px; border-radius: 8px; color: white;">
             <i data-feather="truck"></i>
         </div>
-        C&F Agent Portal
+        C&F Department Portal
     </div>
 
     <div
@@ -182,38 +232,62 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="logQuantity" placeholder="e.g. 900">
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label>🌡️ Temperature (°C)</label>
-                    <input type="text" id="logTemp" placeholder="e.g. 4.5">
+                    <label>Operator ID</label>
+                    <input type="text" id="logOperatorId" placeholder="e.g. OP-101">
                 </div>
                 <div class="form-group">
-                    <label>🚛 Vehicle ID</label>
-                    <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                    <label>Operator Name</label>
+                    <input type="text" id="logOperatorName" placeholder="e.g. Alice">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label>📥 Ingress Quality</label>
-                    <input type="text" id="logIngress" placeholder="Passed / Failed">
+                    <label>📍 Latitude</label>
+                    <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Auto">
                 </div>
                 <div class="form-group">
-                    <label>📤 Egress Quality</label>
-                    <input type="text" id="logEgress" placeholder="Passed / Failed">
+                    <label>📍 Longitude</label>
+                    <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Auto">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Notes</label>
-                <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai hub">
+                <label>🚛 Vehicle ID</label>
+                <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
             </div>
-
-            <button onclick="submitAction()" class="action-btn" style="background: #3b82f6;">Update Status & Mine Block
-                ⛏️</button>
-            <div id="actionResult" style="margin-top:15px;"></div>
         </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>📥 Ingress Quality</label>
+                <input type="text" id="logIngress" placeholder="Passed / Failed">
+            </div>
+            <div class="form-group">
+                <label>📤 Egress Quality</label>
+                <input type="text" id="logEgress" placeholder="Passed / Failed">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Notes</label>
+            <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai hub">
+        </div>
+
+        <button onclick="submitAction()" class="action-btn" style="background: #3b82f6;">Update Status & Mine Block
+            ⛏️</button>
+        <div id="actionResult" style="margin-top:15px;"></div>
     </div>
+</div>
 </div>
 
 <script>
@@ -245,11 +319,12 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+    <div style="display: block;">
         <!-- Distribution Form -->
         <div
-            style="padding: 1.5rem; background: #fffcf0; border-radius: 12px; border: 1px solid #feebc8; height: fit-content;">
+            style="padding: 1.5rem; background: #fffcf0; border-radius: 12px; border: 1px solid #feebc8; margin-bottom: 2rem;">
             <h3 style="margin-top: 0; color: #7b341e; margin-bottom: 1.5rem;">Update Logistics</h3>
+
 
             <div class="form-group">
                 <label>Scan QR Code (Enter Batch ID)</label>
@@ -270,75 +345,99 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="logQuantity" placeholder="e.g. 450">
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label>🌡️ Temperature (°C)</label>
-                    <input type="text" id="logTemp" placeholder="e.g. 4.5">
+                    <label>Operator ID</label>
+                    <input type="text" id="logOperatorId" placeholder="e.g. OP-101">
                 </div>
                 <div class="form-group">
-                    <label>🚛 Vehicle ID</label>
-                    <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                    <label>Operator Name</label>
+                    <input type="text" id="logOperatorName" placeholder="e.g. Alice">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label>📥 Ingress Quality</label>
-                    <input type="text" id="logIngress" placeholder="Passed / Failed">
+                    <label>📍 Latitude</label>
+                    <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Auto">
                 </div>
                 <div class="form-group">
-                    <label>📤 Egress Quality</label>
-                    <input type="text" id="logEgress" placeholder="Passed / Failed">
+                    <label>📍 Longitude</label>
+                    <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Auto">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Notes</label>
-                <input type="text" id="actionNote" placeholder="e.g. Good condition">
+                <label>🚛 Vehicle ID</label>
+                <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
             </div>
-
-            <button onclick="submitAction()" class="action-btn" style="background: var(--stat-orange);">Update Status &
-                Mine Block ⛏️</button>
-            <div id="actionResult" style="margin-top:15px;"></div>
         </div>
 
-        <!-- Working Batches Table -->
-        <div>
-            <h3>Active Inventory</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #ddd; text-align: left;">
-                        <th style="padding: 10px;">Batch ID</th>
-                        <th style="padding: 10px;">Drug Name</th>
-                        <th style="padding: 10px;">Status</th>
-                        <th style="padding: 10px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for batch in batches %}
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 15px 10px;"><strong>{{ batch.batch_id }}</strong></td>
-                        <td style="padding: 15px 10px;">{{ batch.drug_name }}</td>
-                        <td style="padding: 15px 10px;">
-                            <span
-                                style="background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 50px; font-size: 0.85rem;">{{
-                                batch.current_status }}</span>
-                        </td>
-                        <td style="padding: 15px 10px;">
-                            <button class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem;"
-                                onclick="document.getElementById('scanInput').value='{{ batch.batch_id }}'">Manage</button>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" style="padding: 2rem; text-align: center; color: grey;">No active batches in
-                            transit.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>📥 Ingress Quality</label>
+                <input type="text" id="logIngress" placeholder="Passed / Failed">
+            </div>
+            <div class="form-group">
+                <label>📤 Egress Quality</label>
+                <input type="text" id="logEgress" placeholder="Passed / Failed">
+            </div>
         </div>
+
+        <div class="form-group">
+            <label>Notes</label>
+            <input type="text" id="actionNote" placeholder="e.g. Good condition">
+        </div>
+
+        <button onclick="submitAction()" class="action-btn" style="background: var(--stat-orange);">Update Status &
+            Mine Block ⛏️</button>
+        <div id="actionResult" style="margin-top:15px;"></div>
     </div>
+
+    <!-- Working Batches Table -->
+    <div>
+        <h3>Active Inventory</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                    <th style="padding: 10px;">Batch ID</th>
+                    <th style="padding: 10px;">Drug Name</th>
+                    <th style="padding: 10px;">Status</th>
+                    <th style="padding: 10px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for batch in batches %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 15px 10px;"><strong>{{ batch.batch_id }}</strong></td>
+                    <td style="padding: 15px 10px;">{{ batch.drug_name }}</td>
+                    <td style="padding: 15px 10px;">
+                        <span
+                            style="background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 50px; font-size: 0.85rem;">{{
+                            batch.current_status }}</span>
+                    </td>
+                    <td style="padding: 15px 10px;">
+                        <button class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem;"
+                            onclick="document.getElementById('scanInput').value='{{ batch.batch_id }}'">Manage</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 2rem; text-align: center; color: grey;">No active batches in
+                        transit.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 </div>
 
 <script>
@@ -371,10 +470,10 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+    <div style="display: block;">
         <!-- Retail Actions -->
         <div
-            style="padding: 1.5rem; background: #f5f3ff; border-radius: 12px; border: 1px solid #ddd6fe; height: fit-content;">
+            style="padding: 1.5rem; background: #f5f3ff; border-radius: 12px; border: 1px solid #ddd6fe; margin-bottom: 2rem;">
             <h3 style="margin-top: 0; color: #4c1d95; margin-bottom: 1.5rem;">Retailer Portal</h3>
 
             <div class="form-group">
@@ -395,85 +494,85 @@
                 </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>🌡️ Temperature (°C)</label>
-                    <input type="text" id="logTemp" placeholder="e.g. 4.5">
-                </div>
-                <div class="form-group">
-                    <label>🚛 Vehicle ID</label>
-                    <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>📥 Ingress Quality</label>
-                    <input type="text" id="logIngress" placeholder="Passed / Failed">
-                </div>
-                <div class="form-group">
-                    <label>📤 Egress Quality</label>
-                    <input type="text" id="logEgress" placeholder="Passed / Failed">
-                </div>
+            <div class="form-group">
+                <label>Quantity Received/Sold</label>
+                <input type="number" id="logQuantity" placeholder="e.g. 10">
             </div>
 
             <div class="form-group">
-                <label>Notes</label>
-                <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai Hub">
+                <label>Operator ID</label>
+                <input type="text" id="logOperatorId" placeholder="e.g. OP-101">
+            </div>
+            <div class="form-group">
+                <label>Operator Name</label>
+                <input type="text" id="logOperatorName" placeholder="e.g. Alice">
             </div>
 
-            <button onclick="submitAction()" class="action-btn" style="background: #8b5cf6;">Update Status & Mine Block
-                ⛏️</button>
-            <div id="actionResult" style="margin-top:15px;"></div>
-        </div>
-
-        <!-- Inventory and Prescriptions -->
-        <div>
-            <h3>Recent Activity</h3>
-            <div style="margin-top: 1rem;">
-                {% for rx in prescriptions %}
-                <div
-                    style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 1rem 0;">
-                    <div>
-                        <strong style="display: block; font-size: 1.1rem;">{{ rx.patient }}</strong>
-                        <span style="color: grey;">{{ rx.drug }} ({{ rx.batch }})</span>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-weight: bold; color: var(--stat-green);">Dispensed</div>
-                        <div style="font-size: 0.8rem; color: grey;">{{ rx.date }}</div>
-                    </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>📍 Latitude</label>
+                    <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Auto">
                 </div>
-                {% endfor %}
+                <div class="form-group">
+                    <label>📍 Longitude</label>
+                    <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
+                        placeholder="Auto">
+                </div>
             </div>
-
-            <h3 style="margin-top: 2rem;">Current Stock</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #ddd; text-align: left;">
-                        <th style="padding: 10px;">Batch ID</th>
-                        <th style="padding: 10px;">Drug Name</th>
-                        <th style="padding: 10px;">Expiry</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in inventory %}
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px 10px;"><strong>{{ item.batch_id }}</strong></td>
-                        <td style="padding: 12px 10px;">{{ item.drug_name }}</td>
-                        <td style="padding: 12px 10px;" class="{% if item.exp_date < today %}expired-text{% endif %}">
-                            {{ item.exp_date }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="3" style="padding: 2rem; text-align: center; color: grey;">No stock currently at
-                            retail.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
+
+        <button onclick="submitAction()" class="action-btn" style="background: #8b5cf6; margin-top: 1rem;">Update Status
+            & Mine Block ⛏️</button>
+        <div id="actionResult" style="margin-top:15px;"></div>
     </div>
+
+    <!-- Inventory and Prescriptions -->
+    <div>
+        <h3>Recent Activity</h3>
+        <div style="margin-top: 1rem;">
+            {% for rx in prescriptions %}
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 1rem 0;">
+                <div>
+                    <strong style="display: block; font-size: 1.1rem;">{{ rx.patient }}</strong>
+                    <span style="color: grey;">{{ rx.drug }} ({{ rx.batch }})</span>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: bold; color: var(--stat-green);">Dispensed</div>
+                    <div style="font-size: 0.8rem; color: grey;">{{ rx.date }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3 style="margin-top: 2rem;">Current Stock</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                    <th style="padding: 10px;">Batch ID</th>
+                    <th style="padding: 10px;">Drug Name</th>
+                    <th style="padding: 10px;">Expiry</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px 10px;"><strong>{{ item.batch_id }}</strong></td>
+                    <td style="padding: 12px 10px;">{{ item.drug_name }}</td>
+                    <td style="padding: 12px 10px;" class="{% if item.exp_date < today %}expired-text{% endif %}">
+                        {{ item.exp_date }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="padding: 2rem; text-align: center; color: grey;">No stock currently at
+                        retail.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 </div>
 
 <script>

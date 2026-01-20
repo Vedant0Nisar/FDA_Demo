@@ -13,7 +13,7 @@ contract RetailerRegistry {
         bool exists;
     }
 
-    mapping(string => RetailerData) public retailerLedger;
+    mapping(string => RetailerData[]) public retailerLedger; // Changed to array
     event RetailerUpdated(string indexed batchId, string shopName, string ownerName);
 
     function updateRetailer(
@@ -26,9 +26,9 @@ contract RetailerRegistry {
         string memory _contactNo,
         string memory _regDate
     ) public {
-        retailerLedger[_batchId] = RetailerData(
+        retailerLedger[_batchId].push(RetailerData(
             _retailerId, _retailerType, _shopName, _quantity, _ownerName, _contactNo, _regDate, true
-        );
+        ));
         emit RetailerUpdated(_batchId, _shopName, _ownerName);
     }
 }

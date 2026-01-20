@@ -15,13 +15,14 @@ contract MedicineTracker {
         string outgoing;
         string exitTime;
         address officer;
+        uint256 quantity; // Added quantity tracking
     }
 
     mapping(string => Medicine) public medicines;
     mapping(string => Movement[]) public history;
 
     event Registered(string batchId, string name, address manufacturer);
-    event Moved(string batchId, string incoming, string outgoing, string exitTime);
+    event Moved(string batchId, string incoming, string outgoing, string exitTime, uint256 quantity);
 
     function registerMedicine(string memory _batchId, string memory _name, string[] memory _details) public {
         require(!medicines[_batchId].isRegistered, "Batch ID already exists!");
@@ -29,9 +30,14 @@ contract MedicineTracker {
         emit Registered(_batchId, _name, msg.sender);
     }
 
-    function updateLogistics(string memory _batchId, string memory _in, string memory _out, string memory _time) public {
+    function updateLogistics(string memory _batchId, string memory _in, string memory _out, string memory _time, uint256 _qty) public {
         require(medicines[_batchId].isRegistered, "Medicine not registered!");
-        history[_batchId].push(Movement(_in, _out, _time, msg.sender));
-        emit Moved(_batchId, _in, _out, _time);
+        history[_batchId].push(Movement(_in, _out, _time, msg.sender, _qty));
+        emit Moved(_batchId, _in, _out, _time, _qty);
+    }
+
+    // Helper for Verification Service
+    function getMedicineDetails(string memory _bId) public view returns (string[] memory) {
+        return medicines[_bId].details;
     }
 }

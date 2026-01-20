@@ -13,22 +13,42 @@ router = APIRouter(
 def verify_product_endpoint(request: VerifyRequest, db: RealDictCursor = Depends(get_db)):
     """
     Scans a product Batch ID to determine if it is Authentic, Counterfeit, or Recalled.
+    NOW INCLUDES: Real-time Blockchain Cross-Reference Check.
     """
     try:
-        # Call the stored procedure
-        # verify_product returns: (status, message, product_name, exp_date)
+        from app.services.verification_service import VerificationService
+        
+        # 1. Perform Security Check (The "Police" Check)
+        security_check = VerificationService.verify_batch_integrity(request.batch_id, db)
+        
+        if security_check['status'] == "TAMPERED":
+             # Immediate Stop
+             return VerificationResponse(
+                status="TAMPERED",
+                message=security_check['message'],
+                timestamp=datetime.now()
+             )
+        
+        if security_check['status'] in ["UNKNOWN", "NOT_FOUND"]:
+             raise HTTPException(status_code=404, detail=security_check['message'])
+
+        # 2. If Authentic/Warning, get full details from DB (The "Info" Check)
         db.callproc('verify_product', [request.batch_id])
         result = db.fetchone()
         
         if not result:
-             raise HTTPException(status_code=404, detail="Verification process returned no result.")
+             # Should be caught by service, but failsafe
+             raise HTTPException(status_code=404, detail="Product not found in system.")
 
-        # The result from RealDictCursor might look different depending on psycopg2 version
-        # verify_product returns a TABLE, so fetchone gives a dict
+        # If Service said WARNING (e.g. not on chain yet), we keep that status
+        final_status = security_check['status'] if security_check['status'] != "AUTHENTIC" else result['status']
+        # Note: If DB proc says "EXPIRED" but Chain says "AUTHENTIC", we should trust DB for expiration logic 
+        # but Chain for data integrity. 
+        # Actually, let's allow the DB proc to rule on 'EXPIRED' vs 'VALID' if integrity is good.
         
         return VerificationResponse(
-            status=result['status'],
-            message=result['message'],
+            status=final_status,
+            message=result['message'] + f" ({security_check['message']})",
             product_name=result['product_name'],
             exp_date=result['exp_date'],
             timestamp=datetime.now()
@@ -37,5 +57,4 @@ def verify_product_endpoint(request: VerifyRequest, db: RealDictCursor = Depends
     except HTTPException:
         raise
     except Exception as e:
-        # Log will be handled by global handler, but we re-raise for 500
         raise RuntimeError(f"Database error during verification: {e}")

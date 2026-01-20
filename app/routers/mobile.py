@@ -125,7 +125,6 @@ def get_batch_full_details(batch_id: str, db: RealDictCursor = Depends(get_db)):
             "department": e['department_name'],
             "tx_hash": e['blockchain_tx_id'],
             "details": {
-                "temp": meta.get("temp") or meta.get("temperature"),
                 "vehicle": meta.get("vehicle_id"),
                 "notes": meta.get("notes") or meta.get("description"),
                 "location": meta.get("location")
@@ -233,7 +232,6 @@ def download_certificate(batch_id: str, db: RealDictCursor = Depends(get_db)):
     # Try to find real QC metrics in event metadata
     for e in events:
         if e['metadata'] and isinstance(e['metadata'], dict):
-            if 'temp' in e['metadata']: qc_data['storage_temp'] = e['metadata']['temp']
             if 'ingress_quality' in e['metadata']: qc_data['ingress_check'] = e['metadata']['ingress_quality']
 
     # 4. Construct Audit Trail Steps with Full Metadata
@@ -248,7 +246,6 @@ def download_certificate(batch_id: str, db: RealDictCursor = Depends(get_db)):
             "timestamp": e['timestamp'].strftime("%Y-%m-%d %H:%M:%S"),
             "blockchain_tx": e['blockchain_tx_id'],
             "metadata_info": {
-                "temperature": meta.get("temp") or meta.get("temperature") or "N/A",
                 "vehicle_id": meta.get("vehicle_id") or "N/A",
                 "notes": meta.get("notes") or meta.get("description") or "N/A",
                 "location": meta.get("location") or "N/A"

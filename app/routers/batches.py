@@ -70,7 +70,8 @@ def create_batch(request: BatchCreateRequest, db: RealDictCursor = Depends(get_d
             f"MFG:{request.mfg_date}", 
             f"EXP:{request.exp_date}", 
             f"SIZE:{request.batch_size}",
-            f"LIC:{request.manufacturer_license}"
+            f"LIC:{request.manufacturer_license}",
+            f"OP:{request.operator_name or 'Unknown'}"
         ]
         tx_hash = BlockchainService.register_product(request.batch_id, f"GTIN-{request.product_gtin}", details)
 
@@ -84,7 +85,9 @@ def create_batch(request: BatchCreateRequest, db: RealDictCursor = Depends(get_d
         # 6. Log Genesis Event
         metadata = {
             "blockchain_hash": tx_hash, 
-            "description": "Initial Batch Creation"
+            "description": "Initial Batch Creation",
+            "operator_name": request.operator_name,
+            "location": request.location.dict() if request.location else None
         }
         
         SYSTEM_USER_ID = 1 
@@ -129,6 +132,15 @@ def add_batch_event(batch_id: str, event: BatchEventRequest, db: RealDictCursor 
     batch = db.fetchone()
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
+        
+    # 1.5 Security Integrity Check (Fail-Closed)
+    from app.services.verification_service import VerificationService
+    integrity = VerificationService.verify_batch_integrity(batch_id, db)
+    if integrity['status'] == 'TAMPERED':
+        raise HTTPException(status_code=403, detail=f"SECURITY ALERT: Batch is TAMPERED. Action blocked. {integrity['message']}")
+    if integrity['status'] == 'UNKNOWN':
+        # Depending on policy, we might allow manual override or block. strict = block.
+        raise HTTPException(status_code=503, detail="Blockchain verification unavailable. Cannot proceed safely.")
 
     # 2. Log Event
     from psycopg2.extras import Json
@@ -138,12 +150,15 @@ def add_batch_event(batch_id: str, event: BatchEventRequest, db: RealDictCursor 
         "vehicle_id": event.vehicle_id,
         "ingress": event.ingress_quality,
         "egress": event.egress_quality,
-        "temp": event.temperature,
-        "notes": event.notes
+        "notes": event.notes,
+        "quantity": event.quantity,
+        "operator_id": event.operator_id,
+        "operator_name": event.operator_name
     }
 
     # Log to Real Blockchain
     timestamp = str(datetime.now())
+    qty = event.quantity if event.quantity is not None else 0
     
     # Define Logic based on Role/Action
     if 'DISTRIBUTOR' in event.action_type:
@@ -157,7 +172,8 @@ def add_batch_event(batch_id: str, event: BatchEventRequest, db: RealDictCursor 
             "500",      # Stock
             event.ingress_quality or "Fair",
             event.egress_quality or "Fair",
-            event.notes or "No Doubt"
+            event.notes or "No Doubt",
+            qty
         )
     elif 'RETAILER' in event.action_type:
         # Retailer Specific Logic
@@ -166,7 +182,7 @@ def add_batch_event(batch_id: str, event: BatchEventRequest, db: RealDictCursor 
             "RET-001",
             "Pharmacy",
             "City Chemist",
-            100,
+            qty,
             "Mr. Owner",
             "9999999999",
             str(datetime.now().date())
@@ -177,7 +193,8 @@ def add_batch_event(batch_id: str, event: BatchEventRequest, db: RealDictCursor 
             batch_id, 
             event.ingress_quality or "N/A", 
             event.egress_quality or "N/A", 
-            timestamp
+            timestamp,
+            qty
         )
     
     metadata['hash'] = tx_hash

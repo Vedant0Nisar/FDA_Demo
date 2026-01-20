@@ -25,7 +25,7 @@
                     <span class="logo-separator">X</span>
                     <img src="/static/assets/MFDA.png" alt="Logo" class="brand-logo">
                 </div>
-                <h1 class="brand-title">PharmTrace Drug Traceability System</h1>
+                <h1 class="brand-title">Maha-Medicines Traceability System</h1>
             </div>
             <div class="live-indicator">
                 <span class="pulse-dot"></span>
@@ -44,11 +44,12 @@
         <a href="/manufacturer" class="role-pill {% if role == 'Manufacturer' %}active{% endif %}">
             <i data-feather="box"></i> Manufacturer
         </a>
-        <a href="/cnf" class="role-pill {% if role == 'C&F Agent' %}active{% endif %}">
-            <i data-feather="truck"></i> C&F Agent
-        </a>
+
         <a href="/fda_cdf" class="role-pill {% if role == 'FDA CDF' %}active{% endif %}">
-            <i data-feather="file-text"></i> FDA CDF
+            <i data-feather="file-text"></i> FDA Traceability
+        </a>
+        <a href="/cnf" class="role-pill {% if role == 'C&F Agent' %}active{% endif %}">
+            <i data-feather="truck"></i> C&F Department
         </a>
         <a href="/distributor" class="role-pill {% if role == 'Distributor' %}active orange{% endif %}">
             <i data-feather="truck"></i> Distributor
@@ -68,14 +69,16 @@
 
     <footer class="main-footer">
         <div class="container footer-content">
-            <div class="footer-brand">
-                <i data-feather="shield"></i> PharmTrace SA
+            <div class="footer-text-primary">
+                &copy; 2026 MAHA-Medicines. All rights reserved.
+                <span class="footer-separator">|</span>
+                <a href="#" class="footer-link">Privacy Policy</a> &bull;
+                <a href="#" class="footer-link">Terms of Use</a> &bull;
+                <a href="#" class="footer-link">Support</a>
             </div>
-            <div class="footer-links">
-                &copy; 2026 PharmTrace SA. All rights reserved.
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Use</a>
-                <a href="#">Support</a>
+            <div class="footer-text-secondary">
+                State Emblem of Maharashtra and Food and Drug Administration of Maharashtra are trademark/copyright
+                protected. All rights reserved.
             </div>
         </div>
     </footer>

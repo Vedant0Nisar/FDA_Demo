@@ -9,11 +9,12 @@ contract DistributorRegistry {
         string ingress;
         string egress;
         string doubtEye;
+        uint256 quantity; // Added quantity tracking
         bool exists;
     }
 
-    mapping(string => DistributionData) public distributions;
-    event DistributorUpdated(string indexed batchId, string distId, string ingress, string egress);
+    mapping(string => DistributionData[]) public distributions; // Changed to array for splitting
+    event DistributorUpdated(string indexed batchId, string distId, string ingress, string egress, uint256 quantity);
 
     function updateDistributor(
         string memory _batchId,
@@ -22,11 +23,12 @@ contract DistributorRegistry {
         string memory _stock,
         string memory _ingress,
         string memory _egress,
-        string memory _doubtEye
+        string memory _doubtEye,
+        uint256 _quantity
     ) public {
-        distributions[_batchId] = DistributionData(
-            _distId, _capacity, _stock, _ingress, _egress, _doubtEye, true
-        );
-        emit DistributorUpdated(_batchId, _distId, _ingress, _egress);
+        distributions[_batchId].push(DistributionData(
+            _distId, _capacity, _stock, _ingress, _egress, _doubtEye, _quantity, true
+        ));
+        emit DistributorUpdated(_batchId, _distId, _ingress, _egress, _quantity);
     }
 }

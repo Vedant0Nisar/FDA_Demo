@@ -11,10 +11,12 @@ class GeoLocation(BaseModel):
 class BatchCreateRequest(BaseModel):
     batch_id: str = Field(..., description="Unique Batch Identifier, e.g., BATCH-001")
     product_gtin: str = Field(..., description="Global Trade Item Number of the product")
+    operator_name: Optional[str] = Field(None, description="Name of the operator creating the batch")
     manufacturer_license: str = Field(..., description="License number of the manufacturer")
     mfg_date: date
     exp_date: date
     batch_size: int
+    location: Optional[GeoLocation] = None
     
 class VerifyRequest(BaseModel):
     batch_id: str
@@ -27,13 +29,16 @@ class BatchEventRequest(BaseModel):
     location: Optional[GeoLocation] = None
     user_id: int = Field(1, description="ID of the user performing the action")
     department_id: int = Field(1, description="ID of the department")
+    quantity: Optional[int] = Field(None, description="Quantity involved in this event")
     
     # Logistics Details
     vehicle_id: Optional[str] = None
     ingress_quality: Optional[str] = None
     egress_quality: Optional[str] = None
-    temperature: Optional[str] = None
+    # Temperature removed as per request
     notes: Optional[str] = None
+    operator_id: Optional[str] = None
+    operator_name: Optional[str] = None
 
 
 # --- Responses ---
