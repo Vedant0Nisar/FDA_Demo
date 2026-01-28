@@ -6,14 +6,22 @@ from app.blockchain_config import RPC_URL, ADDR_TRACKER, ABI_TRACKER, ADDR_DISTR
 logger = logging.getLogger(__name__)
 
 class BlockchainService:
-    w3 = Web3(Web3.HTTPProvider(RPC_URL))
-    
-    # Contracts
-    start_account = w3.eth.accounts[0] # Default
-    
-    contract_tracker = w3.eth.contract(address=ADDR_TRACKER, abi=ABI_TRACKER)
-    contract_distributor = w3.eth.contract(address=ADDR_DISTRIBUTOR, abi=ABI_DISTRIBUTOR)
-    contract_retailer = w3.eth.contract(address=ADDR_RETAILER, abi=ABI_RETAILER)
+    try:
+        w3 = Web3(Web3.HTTPProvider(RPC_URL))
+        if not w3.is_connected():
+            logger.error(f"FATAL: Cannot connect to Blockchain at {RPC_URL}")
+        
+        # Contracts
+        start_account = w3.eth.accounts[0] # Default
+        
+        contract_tracker = w3.eth.contract(address=ADDR_TRACKER, abi=ABI_TRACKER)
+        contract_distributor = w3.eth.contract(address=ADDR_DISTRIBUTOR, abi=ABI_DISTRIBUTOR)
+        contract_retailer = w3.eth.contract(address=ADDR_RETAILER, abi=ABI_RETAILER)
+    except Exception as e:
+        logger.critical(f"BLOCKCHAIN CONNECTION FAILED: {e}")
+        logger.critical("SUGGESTION: Run 'python deploy_user_contracts.py' to deploy contracts and update config.")
+        # We don't raise here to allow app to start, but API calls will fail
+        w3 = None
 
     @classmethod
     def register_product(cls, batch_id: str, name: str, details: list) -> str:

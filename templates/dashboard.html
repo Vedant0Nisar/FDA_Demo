@@ -1,5 +1,81 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    #map {
+        height: 500px;
+        width: 100%;
+        border-radius: 12px;
+        z-index: 1;
+        margin-top: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .map-controls {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .control-row {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .control-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .map-btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        cursor: pointer;
+        background: #f8fafc;
+        font-weight: 500;
+        transition: all 0.2s;
+        color: #475569;
+    }
+
+    .map-btn:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .map-btn.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+
+    .search-input {
+        padding: 9px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        width: 220px;
+        font-size: 0.95rem;
+    }
+
+    .map-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <!-- REGULATOR (Command and Control) -->
@@ -34,6 +110,57 @@
             <span class="stat-sub">No safety issues</span>
         </div>
     </div>
+</div>
+
+<!-- Map Section -->
+<div style="margin-top: 3rem;">
+    <div class="map-header">
+        <div
+            style="background: #6366f1; padding: 8px; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center;">
+            <i data-feather="map"></i>
+        </div>
+        Supply Chain Map - Maharashtra
+    </div>
+
+    <div class="map-controls">
+        <!-- Manufacturers Controls -->
+        <div class="control-row">
+            <strong style="min-width: 120px; color: #1e293b; display: flex; align-items: center; gap: 5px;">
+                <i data-feather="box" style="width: 16px; height: 16px; color: #2563eb;"></i> Mfrs:
+            </strong>
+            <select id="manDropdown" class="search-input" onchange="focusLocation(this.value, 'manufacturer')">
+                <option value="">Select Manufacturer...</option>
+            </select>
+            <button class="map-btn" onclick="toggleLayer('manufacturer', true)">Show All</button>
+            <button class="map-btn" onclick="toggleLayer('manufacturer', false)">Hide All</button>
+        </div>
+
+        <!-- Distributors Controls -->
+        <div class="control-row">
+            <strong style="min-width: 120px; color: #1e293b; display: flex; align-items: center; gap: 5px;">
+                <i data-feather="truck" style="width: 16px; height: 16px; color: #f97316;"></i> Dist:
+            </strong>
+            <select id="distDropdown" class="search-input" onchange="focusLocation(this.value, 'distributor')">
+                <option value="">Select Distributor...</option>
+            </select>
+            <button class="map-btn" onclick="toggleLayer('distributor', true)">Show All</button>
+            <button class="map-btn" onclick="toggleLayer('distributor', false)">Hide All</button>
+        </div>
+
+        <!-- General Search -->
+        <div class="control-row" style="border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 15px;">
+            <div style="position: relative;">
+                <i data-feather="search"
+                    style="position: absolute; left: 10px; top: 10px; width: 16px; height: 16px; color: #94a3b8;"></i>
+                <input type="text" id="mapSearch" class="search-input" placeholder="Search location name..."
+                    style="width: 300px; padding-left: 35px;" oninput="searchMap(this.value)">
+            </div>
+            <button class="map-btn" onclick="resetMap()">Reset View</button>
+        </div>
+    </div>
+
+    <div id="map"></div>
+</div>
 </div>
 {% endif %}
 
@@ -580,4 +707,157 @@
 </script>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!document.getElementById('map')) return; // Only run if map container exists
+
+        // Initialize Map
+        const map = L.map('map').setView([19.7515, 75.7139], 7); // Center of Maharashtra
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Dummy Data
+        const manufacturers = [
+            { name: "Cipla Ltd (Mumbai)", lat: 19.0760, lng: 72.8777, type: 'manufacturer', details: "Mumbai HQ - Main Production Unit" },
+            { name: "Sun Pharma (Pune)", lat: 18.5204, lng: 73.8567, type: 'manufacturer', details: "Pune Plant - R&D Center" },
+            { name: "Lupin Ltd (Nagpur)", lat: 21.1458, lng: 79.0882, type: 'manufacturer', details: "Nagpur Unit - Export Wing" },
+            { name: "Dr. Reddy's (Aurangabad)", lat: 19.8762, lng: 75.3433, type: 'manufacturer', details: "Waluj MIDC - Injectables" },
+            { name: "Glenmark (Nashik)", lat: 19.9975, lng: 73.7898, type: 'manufacturer', details: "Sinnar SEZ" }
+        ];
+
+        const distributors = [
+            { name: "MediCare Dist (Thane)", lat: 19.2183, lng: 72.9781, type: 'distributor', details: "Thane West - Central Hub" },
+            { name: "Global Pharma Agencies (Vashi)", lat: 19.0771, lng: 72.9986, type: 'distributor', details: "Navi Mumbai Zone" },
+            { name: "Sai Logistics (Solapur)", lat: 17.6599, lng: 75.9064, type: 'distributor', details: "Solapur Zone - South MH" },
+            { name: "Unique Pharma (Kolhapur)", lat: 16.7050, lng: 74.2433, type: 'distributor', details: "Kolhapur Main Depot" },
+            { name: "MahaDrug Supply (Amravati)", lat: 20.9374, lng: 77.7523, type: 'distributor', details: "Vidarbha Region" }
+        ];
+
+        window.mapMarkers = []; // Global to access in functions if needed, but we used closures
+
+        // Custom SVG Icons
+        const boxSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>';
+        const truckSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>';
+
+        const manIcon = L.divIcon({
+            html: `<div style="background:white; border-radius:50%; padding:4px; box-shadow:0 2px 4px rgba(0,0,0,0.2); display:flex; justify-content:center; align-items:center; width:32px; height:32px;">${boxSvg}</div>`,
+            className: 'custom-div-icon',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
+        });
+
+        const distIcon = L.divIcon({
+            html: `<div style="background:white; border-radius:50%; padding:4px; box-shadow:0 2px 4px rgba(0,0,0,0.2); display:flex; justify-content:center; align-items:center; width:32px; height:32px;">${truckSvg}</div>`,
+            className: 'custom-div-icon',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
+        });
+
+        function initMarkers() {
+            const manSelect = document.getElementById('manDropdown');
+            const distSelect = document.getElementById('distDropdown');
+
+            manufacturers.forEach((m, i) => {
+                manSelect.innerHTML += `<option value="${i}">${m.name}</option>`;
+                createMarker(m, i, 'manufacturer', manIcon);
+            });
+
+            distributors.forEach((d, i) => {
+                distSelect.innerHTML += `<option value="${i}">${d.name}</option>`;
+                createMarker(d, i, 'distributor', distIcon);
+            });
+
+            // Feather replace for the new icons in map controls
+            feather.replace();
+        }
+
+        function createMarker(data, index, type, icon) {
+            const marker = L.marker([data.lat, data.lng], { icon: icon })
+                .bindPopup(`<div style="font-family: 'Inter', sans-serif;">
+                                <h4 style="margin:0 0 5px 0; color:#1e293b;">${data.name}</h4>
+                                <span style="background:${type === 'manufacturer' ? '#dbeafe' : '#ffedd5'}; color:${type === 'manufacturer' ? '#1e40af' : '#9a3412'}; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:600;">${type.toUpperCase()}</span>
+                                <p style="margin:5px 0 0 0; color:#64748b; font-size:0.85rem;">${data.details}</p>
+                            </div>`);
+
+            marker.dataRaw = data;
+            marker.type = type;
+            marker.addTo(map);
+            window.mapMarkers.push(marker);
+        }
+
+        initMarkers();
+
+        // Expose functions to window for onclick handlers
+        window.toggleLayer = function (type, show) {
+            window.mapMarkers.forEach(m => {
+                if (m.type === type) {
+                    if (show) {
+                        if (!map.hasLayer(m)) m.addTo(map);
+                    } else {
+                        if (map.hasLayer(m)) map.removeLayer(m);
+                    }
+                }
+            });
+        };
+
+        window.focusLocation = function (index, type) {
+            if (index === "") return;
+            const list = type === 'manufacturer' ? manufacturers : distributors;
+            const target = list[index];
+            if (target) {
+                map.flyTo([target.lat, target.lng], 13);
+                window.mapMarkers.forEach(m => {
+                    if (m.dataRaw.name === target.name) {
+                        if (!map.hasLayer(m)) m.addTo(map);
+                        setTimeout(() => m.openPopup(), 300);
+                    }
+                });
+            }
+        };
+
+        window.searchMap = function (query) {
+            query = query.toLowerCase();
+            window.mapMarkers.forEach(m => {
+                const match = m.dataRaw.name.toLowerCase().includes(query);
+                if (match) {
+                    if (!map.hasLayer(m)) m.addTo(map);
+                    if (query.length > 2) m.openPopup();
+                } else if (query.length > 0) {
+                    // Keep visible but maybe change opacity? For now standard filtering.
+                    // The user request implies searching selects, which might mean filtering out others or just highlighting.
+                    // "if searched specifically then it shou be showing markers as selected"
+                }
+            });
+
+            // If strict match found, center
+            if (query.length > 2) {
+                const bestMatch = window.mapMarkers.find(m => m.dataRaw.name.toLowerCase().includes(query));
+                if (bestMatch) {
+                    map.flyTo(bestMatch.getLatLng(), 10);
+                }
+            }
+        };
+
+        window.resetMap = function () {
+            map.setView([19.7515, 75.7139], 7);
+            window.mapMarkers.forEach(m => {
+                if (!map.hasLayer(m)) m.addTo(map);
+                m.closePopup();
+            });
+            document.getElementById('mapSearch').value = '';
+            document.getElementById('manDropdown').value = '';
+            document.getElementById('distDropdown').value = '';
+        };
+    });
+</script>
 {% endblock %}

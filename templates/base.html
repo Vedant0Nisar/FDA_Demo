@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PharmTrace SA{% endblock %}</title>
+    <!-- CSS Block -->
+    {% block head %}{% endblock %}
     <link rel="stylesheet" href="/static/style.css">
     <!-- Load Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
@@ -90,6 +92,8 @@
     <script>
         feather.replace();
     </script>
+    <!-- Scripts Block -->
+    {% block scripts %}{% endblock %}
 </body>
 
 </html>

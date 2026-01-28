@@ -8,8 +8,14 @@ try:
 except Exception as e:
     pass
 
-ganache_url = "http://127.0.0.1:7545"
+ganache_url = os.getenv("GANACHE_URL", "http://127.0.0.1:7545")
 w3 = Web3(Web3.HTTPProvider(ganache_url))
+if not w3.is_connected():
+    print(f"❌ Error: Could not connect to Blockchain at {ganache_url}")
+    print("   - Make sure Ganache is running.")
+    print("   - If using a remote node, set 'GANACHE_URL' environment variable.")
+    exit(1)
+
 w3.eth.default_account = w3.eth.accounts[0]
 
 def deploy_contract(file_path, contract_name):
