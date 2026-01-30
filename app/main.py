@@ -118,7 +118,22 @@ async def fda_cdf_ui(request: Request, db: RealDictCursor = Depends(get_db)):
         ORDER BY e.timestamp DESC LIMIT 50
     """)
     events = db.fetchall()
+    
     return templates.TemplateResponse("dashboard.html", {"request": request, "role": "FDA CDF", "events": events})
+
+@app.get("/fda_verification", response_class=HTMLResponse)
+async def fda_verification_ui(request: Request, db: RealDictCursor = Depends(get_db)):
+    # Fetch Pending Approvals
+    db.execute("""
+        SELECT b.*, m.name as manufacturer_name, p.name as product_name
+        FROM batches b
+        JOIN manufacturers m ON b.manufacturer_id = m.manufacturer_id
+        JOIN products p ON b.product_id = p.product_id
+        WHERE b.fda_approval_status = 'PENDING'
+    """)
+    pending_batches = db.fetchall()
+    
+    return templates.TemplateResponse("dashboard.html", {"request": request, "role": "FDA Verification", "pending_batches": pending_batches})
 
 @app.get("/pharmacist", response_class=HTMLResponse)
 async def pharmacist_ui(request: Request, db: RealDictCursor = Depends(get_db)):

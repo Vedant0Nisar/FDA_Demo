@@ -174,247 +174,624 @@
         Manufacturer Portal
     </div>
 
-    <div
-        style="padding: 2rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
-        <h3 style="margin-top: 0; color: #1e293b; margin-bottom: 1.5rem;">Create New Batch</h3>
+    <style>
+        .tab-container {
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
 
-        <form id="createBatchForm" style="max-width: 600px; margin: 0 auto;">
-            <div class="form-group">
-                <label>Batch ID</label>
-                <input type="text" id="batchId" placeholder="e.g. BATCH-2025-001" required>
-            </div>
-            <div class="form-group">
-                <label>Product GTIN</label>
-                <input type="text" id="gtin" value="GTIN-PARA-500" required>
-            </div>
-            <div class="form-group">
-                <label>Operator Name</label>
-                <input type="text" id="operatorName" placeholder="e.g. John Doe" required>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>📍 Latitude</label>
-                    <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
-                        placeholder="Fetching...">
-                </div>
-                <div class="form-group">
-                    <label>📍 Longitude</label>
-                    <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
-                        placeholder="Fetching...">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Manufacturer License</label>
-                <input type="text" id="license" value="LIC-ABC-001" required>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>Manufacturing Date</label>
-                    <input type="date" id="mfgDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Expiry Date</label>
-                    <input type="date" id="expDate" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Batch Size</label>
-                <input type="number" id="size" value="1000" required>
-            </div>
-            <button type="button" onclick="createBatch()" class="primary-btn"
-                style="width: 100%; padding: 14px; font-size: 1.1rem;">Create Batch & Mint 🪙</button>
-        </form>
+        .tab-btn {
+            padding: 10px 20px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
 
-        <div id="batchResult" style="margin-top: 20px;"></div>
-    </div>
-</div>
+        .tab-btn.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
 
-<script>
-    window.currentRole = 'manufacturer';
-</script>
-{% endif %}
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
 
-<!-- FDA CDF -->
-{% if role == "FDA CDF" %}
-<div class="main-card">
-    <div class="dashboard-title">
-        <div style="background: var(--stat-green); padding: 8px; border-radius: 8px; color: white;">
-            <i data-feather="file-text"></i>
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <div style="padding: 2rem; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+
+        <div class="tab-container">
+            <div class="tab-btn active" onclick="switchTab('batch')">Batch Generation</div>
+            <div class="tab-btn" onclick="switchTab('coa')">COA Generation (QC)</div>
         </div>
-        FDA CDF Oversight
+
+        <!-- TAB 1: BATCH GENERATION -->
+        <div id="tab-batch" class="tab-content active">
+            <h3 style="margin-top: 0; color: #1e293b; margin-bottom: 1.5rem;">Create New Batch</h3>
+            <form id="createBatchForm" style="max-width: 600px; margin: 0 auto;">
+                <div class="form-group">
+                    <label>Batch ID</label>
+                    <input type="text" id="batchId" placeholder="e.g. BATCH-2025-001" required>
+                </div>
+                <div class="form-group">
+                    <label>Product GTIN</label>
+                    <input type="text" id="gtin" value="GTIN-PARA-500" required>
+                </div>
+                <div class="form-group">
+                    <label>Operator Name</label>
+                    <input type="text" id="operatorName" placeholder="e.g. John Doe" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>📍 Latitude</label>
+                        <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
+                            placeholder="Fetching...">
+                    </div>
+                    <div class="form-group">
+                        <label>📍 Longitude</label>
+                        <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
+                            placeholder="Fetching...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Manufacturer License</label>
+                    <input type="text" id="license" value="LIC-ABC-001" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Manufacturing Date</label>
+                        <input type="date" id="mfgDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input type="date" id="expDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Batch Size</label>
+                    <input type="number" id="size" value="1000" required>
+                </div>
+                <button type="button" onclick="createBatch()" class="primary-btn"
+                    style="width: 100%; padding: 14px; font-size: 1.1rem;">Create Batch (Quarantine)</button>
+            </form>
+            <div id="batchResult" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- TAB 2: COA GENERATION -->
+        <div id="tab-coa" class="tab-content">
+            <h3 style="margin-top: 0; color: #1e293b; margin-bottom: 1.5rem;">Generate Certificate of Analysis</h3>
+            <p style="color: grey; margin-bottom: 2rem;">Quality Control (QC) - Test Results & Approval</p>
+
+            <form id="coaForm" style="max-width: 800px; margin: 0 auto;">
+                <div class="form-group">
+                    <label>Select Batch (From Quarantine)</label>
+                    <input type="text" id="coaBatchId" placeholder="Enter Batch ID created recently..." required>
+                </div>
+
+                <div
+                    style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+                    <h4 style="margin-top:0;">Test Results</h4>
+                    <table style="width: 100%; text-align: left;">
+                        <thead>
+                            <tr>
+                                <th>Test Parameter</th>
+                                <th>Specification</th>
+                                <th>Result</th>
+                                <th>Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 8px;"><input type="text" value="Description" readonly
+                                        style="border:none;background:none;font-weight:600;font-size:1rem;width:100%;outline:none;">
+                                </td>
+                                <td style="padding: 8px;">White, circular, biconvex</td>
+                                <td style="padding: 8px;"><input type="text" id="res_desc" class="form-control"
+                                        style="width:100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                                </td>
+                                <td style="padding: 8px;">Visual</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;"><input type="text" value="Assay" readonly
+                                        style="border:none;background:none;font-weight:600;font-size:1rem;width:100%;outline:none;">
+                                </td>
+                                <td style="padding: 8px;">98.0% - 102.0%</td>
+                                <td style="padding: 8px;"><input type="text" id="res_assay" class="form-control"
+                                        style="width:100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                                </td>
+                                <td style="padding: 8px;">HPLC</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;"><input type="text" value="pH" readonly
+                                        style="border:none;background:none;font-weight:600;font-size:1rem;width:100%;outline:none;">
+                                </td>
+                                <td style="padding: 8px;">5.5 - 6.5</td>
+                                <td style="padding: 8px;"><input type="text" id="res_ph" class="form-control"
+                                        style="width:100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                                </td>
+                                <td style="padding: 8px;">pH Meter</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="autoFillCOA()"
+                        style="margin-top: 10px; background: #e0f2fe; color: #0284c7; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">✨
+                        Auto-Populate Mock Data</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Conclusion</label>
+                    <input type="text" id="coaConclusion" value="The above product complies with IP specifications.">
+                </div>
+
+                <div class="form-group">
+                    <label>Authorized Signatory (Upload Digital Signature)</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="file" id="sigUpload" accept="image/*" onchange="previewSig()">
+                        <div id="sigPreview"
+                            style="width: 100px; height: 50px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.8rem;">
+                            Preview</div>
+                    </div>
+                </div>
+
+                <button type="button" onclick="generateCOA()" class="primary-btn"
+                    style="width: 100%; padding: 14px; font-size: 1.1rem; background: #059669;">Generate COA & Request
+                    Release 🚀</button>
+            </form>
+            <div id="coaResult" style="margin-top: 20px;"></div>
+        </div>
+
     </div>
 
-    <div style="margin-top: 2rem;">
-        <h3>Blockchain Audit Log</h3>
-        <p style="color: grey; margin-bottom: 2rem;">Real-time event stream from the pharmaceutical supply chain.</p>
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #ddd; text-align: left;">
-                        <th style="padding: 12px;">Timestamp</th>
-                        <th style="padding: 12px;">Batch ID</th>
-                        <th style="padding: 12px;">Action</th>
-                        <th style="padding: 12px;">User</th>
-                        <th style="padding: 12px;">Blockchain Hash</th>
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+        }
+
+        function autoFillCOA() {
+            document.getElementById('res_desc').value = "White, circular, biconvex tablet";
+            // Randomize slightly
+            document.getElementById('res_assay').value = (99.0 + Math.random() * 2).toFixed(1) + "%";
+            document.getElementById('res_ph').value = (6.0 + (Math.random() - 0.5)).toFixed(1);
+        }
+
+        let sigBase64 = "";
+        function previewSig() {
+            const file = document.getElementById('sigUpload').files[0];
+            const reader = new FileReader();
+            reader.onloadend = function () {
+                sigBase64 = reader.result;
+                document.getElementById('sigPreview').innerHTML = `<img src="${sigBase64}" style="max-height:100%;max-width:100%">`;
+            }
+            if (file) reader.readAsDataURL(file);
+        }
+
+        async function generateCOA() {
+            const batchId = document.getElementById('coaBatchId').value;
+            if (!batchId || !sigBase64) { alert("Please enter Batch ID and Upload Signature!"); return; }
+
+            const payload = {
+                batch_id: batchId,
+                analysis_results: {
+                    description: document.getElementById('res_desc').value,
+                    assay: document.getElementById('res_assay').value,
+                    ph: document.getElementById('res_ph').value
+                },
+                signature_base64: sigBase64,
+                conclusion: document.getElementById('coaConclusion').value
+            };
+
+            const res = await fetch(`/batches/${batchId}/coa`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                document.getElementById('coaResult').innerHTML = `<div class="success-box">COA Generated Successfully! Batch Status: QUARANTINE (Waiting for FDA)</div>`;
+            } else {
+                const err = await res.json();
+                document.getElementById('coaResult').innerHTML = `<div class="error-box">Failed to generate COA: ${err.detail || 'Unknown Error'}</div>`;
+            }
+        }
+    </script>
+
+    <script>
+        window.currentRole = 'manufacturer';
+    </script>
+    {% endif %}
+
+    <!-- FDA VERIFICATION (New Tab) -->
+    {% if role == "FDA Verification" %}
+    <div class="main-card">
+        <div class="dashboard-title">
+            <div style="background: var(--stat-green); padding: 8px; border-radius: 8px; color: white;">
+                <i data-feather="check-circle"></i>
+            </div>
+            FDA Verification Oversight
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h3>Pending Approvals (Quarantine)</h3>
+            <p style="color: grey; margin-bottom: 1rem;">Batches awaiting Quality Control review and release.</p>
+
+            {% if pending_batches %}
+            <table
+                style="width: 100%; border-collapse: collapse; margin-bottom: 2rem; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                    <tr>
+                        <th style="padding: 12px; text-align: left;">Batch ID</th>
+                        <th style="padding: 12px; text-align: left;">Product</th>
+                        <th style="padding: 12px; text-align: left;">Manufacturer</th>
+                        <th style="padding: 12px; text-align: left;">Mfg Date</th>
+                        <th style="padding: 12px; text-align: left;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for event in events %}
+                    {% for batch in pending_batches %}
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 15px 12px; white-space: nowrap;">{{ event.timestamp.strftime('%Y-%m-%d
-                            %H:%M') }}</td>
-                        <td style="padding: 15px 12px;"><strong>{{ event.batch_id }}</strong></td>
-                        <td style="padding: 15px 12px;">
-                            {% if 'TAMPER' in event.action_type %}
-                            <span
-                                style="background: #fee2e2; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #fecaca; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                ⛔ {{ event.action_type }}
-                            </span>
-                            {% elif 'PRODUCED' in event.action_type %}
-                            <span
-                                style="background: #e0f2fe; color: #075985; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #bae6fd; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                📦 {{ event.action_type }}
-                            </span>
-                            {% elif 'CNF' in event.action_type %}
-                            <span
-                                style="background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #86efac; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                🚛 {{ event.action_type }}
-                            </span>
-                            {% elif 'DISPATCHED_TO_RETAILER' in event.action_type %}
-                            <span
-                                style="background: #fce7f3; color: #be185d; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #fbcfe8; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                🚚 {{ event.action_type }}
-                            </span>
-                            {% elif 'DISTRIBUTOR' in event.action_type %}
-                            <span
-                                style="background: #ffedd5; color: #9a3412; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #fed7aa; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                🏭 {{ event.action_type }}
-                            </span>
-                            {% elif 'RETAIL' in event.action_type or 'STORE' in event.action_type or 'CONSUMER' in
-                            event.action_type %}
-                            <span
-                                style="background: #f3e8ff; color: #6b21a8; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #d8b4fe; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                💊 {{ event.action_type }}
-                            </span>
-                            {% else %}
-                            <span
-                                style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #cbd5e1;">
-                                📝 {{ event.action_type }}
-                            </span>
-                            {% endif %}
-                        </td>
-                        <td style="padding: 15px 12px;">{{ event.username or 'System' }}</td>
-                        <td style="padding: 15px 12px;">
-                            <small style="font-family: monospace; color: grey;">
-                                {{ (event.blockchain_tx_id[:20] + '...') if event.blockchain_tx_id else 'Pending
-                                Registration' }}
-                            </small>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" style="padding: 2rem; text-align: center; color: grey;">No events recorded yet.
+                        <td style="padding: 12px;"><strong>{{ batch.batch_id }}</strong></td>
+                        <td style="padding: 12px;">{{ batch.product_name }}</td>
+                        <td style="padding: 12px;">{{ batch.manufacturer_name }}</td>
+                        <td style="padding: 12px;">{{ batch.mfg_date }}</td>
+                        <td style="padding: 12px;">
+                            <button onclick="viewCOA('{{ batch.batch_id }}', '{{ batch.product_name }}')"
+                                style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Review
+                                COA</button>
+                            <button onclick="approveBatch('{{ batch.batch_id }}', 'APPROVED')"
+                                style="background: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px;">Approve</button>
+                            <button onclick="approveBatch('{{ batch.batch_id }}', 'REJECTED')"
+                                style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px;">Reject</button>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-    </div>
-</div>
-{% endif %}
+            {% else %}
+            <div
+                style="padding: 2rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; color: #166534; text-align: center; margin-bottom: 2rem;">
+                ✅ All batches acted upon. No pending approvals.
+            </div>
+            {% endif %}
 
-<!-- C&F AGENT -->
-{% if role == "C&F Agent" %}
-<div class="main-card">
-    <div class="dashboard-title">
-        <div style="background: #3b82f6; padding: 8px; border-radius: 8px; color: white;">
-            <i data-feather="truck"></i>
-        </div>
-        C&F Department Portal
-    </div>
-
-    <div
-        style="padding: 2rem; background: #f0f7ff; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 2rem;">
-        <h3 style="margin-top: 0; color: #1e3a8a; margin-bottom: 1.5rem;">Update Status</h3>
-        <p style="color: #1e40af; margin-bottom: 1.5rem;">Scan or enter batch ID to update its logistics status.</p>
-
-        <div style="max-width: 600px; margin: 0 auto;">
-            <div class="form-group">
-                <label>Scan QR Code (Enter Batch ID)</label>
-                <div class="input-with-button">
-                    <input type="text" id="scanInput" placeholder="Scan or type Batch ID...">
-                    <button class="qr-scan-btn" onclick="triggerQRScan('scanInput')">
-                        <i data-feather="maximize"></i> Scan QR
-                    </button>
+            <!-- COA Modal Reuse Wrapper -->
+            <!-- Note: accessing the same modal ID as globally defined below/scripts specific to verification page -->
+            <div id="coaModal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+                <div
+                    style="background: white; width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 2rem; position: relative;">
+                    <button onclick="document.getElementById('coaModal').style.display='none'"
+                        style="position: absolute; top: 15px; right: 20px; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    <div id="coaContent">Loading...</div>
                 </div>
             </div>
+        </div>
+    </div>
+    <script>
+        window.currentRole = 'fda_verification';
 
-            <div class="form-group">
-                <label>Action</label>
-                <select id="actionType">
-                    <option value="RECEIVED_AT_CNF">RECEIVED AT CNF</option>
-                    <option value="DISPATCHED_TO_DISTRIBUTOR">DISPATCHED TO DISTRIBUTOR</option>
-                </select>
+        async function viewCOA(batchId, productName) {
+            document.getElementById('coaModal').style.display = 'flex';
+            document.getElementById('coaContent').innerHTML = 'Fetching Certificate...';
+
+            try {
+                const res = await fetch(`/batches/${batchId}/coa`);
+                if (res.ok) {
+                    const coa = await res.json();
+
+                    // Safe JSON Parse logic
+                    let results;
+                    if (typeof coa.analysis_results === 'string') {
+                        try {
+                            results = JSON.parse(coa.analysis_results);
+                        } catch (e) {
+                            results = {};
+                        }
+                    } else {
+                        results = coa.analysis_results;
+                    }
+
+                    document.getElementById('coaContent').innerHTML = `
+                        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 1rem; margin-bottom: 1rem;">
+                            <h2 style="margin: 0;">CERTIFICATE OF ANALYSIS</h2>
+                            <p style="margin: 5px 0; color: #666;">${coa.manufacturer_name} | ${coa.address}</p>
+                            <p style="margin: 0; font-size: 0.9rem;">Lic No: ${coa.license_number}</p>
+                        </div>
+                        
+                        <table style="width: 100%; margin-bottom: 1.5rem;">
+                            <tr>
+                                <td><strong>Product:</strong> ${productName}</td>
+                                <td><strong>Batch No:</strong> ${batchId}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mfg Date:</strong> ${coa.mfg_date}</td>
+                                <td><strong>Exp Date:</strong> ${coa.exp_date}</td>
+                            </tr>
+                                <tr>
+                                <td><strong>Batch Size:</strong> ${coa.batch_size}</td>
+                                <td><strong>Date of Analysis:</strong> ${coa.created_at.substring(0, 10)}</td>
+                            </tr>
+                        </table>
+
+                        <h4 style="background: #eee; padding: 5px;">TEST RESULTS</h4>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                            <tr style="border-bottom: 1px solid #ccc;">
+                                <th style="text-align: left; padding: 8px;">Test</th>
+                                <th style="text-align: left; padding: 8px;">Result</th>
+                            </tr>
+                            <tr><td style="padding: 8px;">Description</td><td style="padding: 8px;">${results.description || '-'}</td></tr>
+                            <tr><td style="padding: 8px;">Assay</td><td style="padding: 8px;">${results.assay || '-'}</td></tr>
+                            <tr><td style="padding: 8px;">pH</td><td style="padding: 8px;">${results.ph || '-'}</td></tr>
+                        </table>
+
+                            <div style="margin-top: 20px;">
+                            <strong>Conclusion:</strong> ${coa.conclusion}
+                        </div>
+                        
+                        <div style="margin-top: 40px; display: flex; justify-content: flex-end;">
+                            <div style="text-align: center;">
+                                <img src="${coa.signature_path}" style="height: 60px; display: block; margin: 0 auto;">
+                                <p style="border-top: 1px solid #333; padding-top: 5px; margin-top: 5px;">Authorized Signatory</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('coaContent').innerHTML = 'COA data not found. It might not be generated yet.';
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('coaContent').innerHTML = 'Error loading COA.';
+            }
+        }
+
+        async function approveBatch(batchId, status) {
+            if (!confirm(`Are you sure you want to ${status} batch ${batchId}?`)) return;
+
+            const res = await fetch(`/batches/${batchId}/approve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            });
+
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert("Action failed");
+            }
+        }
+    </script>
+    {% endif %}
+    {% if role == "FDA CDF" %}
+    <div class="main-card">
+        <div class="dashboard-title">
+            <div style="background: var(--stat-green); padding: 8px; border-radius: 8px; color: white;">
+                <i data-feather="file-text"></i>
             </div>
+            FDA CDF Oversight
+        </div>
 
-            <div class="form-group">
-                <label>Quantity</label>
-                <input type="number" id="logQuantity" placeholder="e.g. 900">
+        <!-- Removed Pending Approvals - Moved to FDA Verification Tab -->
+        <div
+            style="padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 2rem; color: #64748b;">
+            ℹ️ Pending Batch Approvals have been moved to the <strong>FDA Verification</strong> tab.
+        </div>
+
+        <!-- COA Modal -->
+        <div id="coaModal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div
+                style="background: white; width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 2rem; position: relative;">
+                <button onclick="document.getElementById('coaModal').style.display='none'"
+                    style="position: absolute; top: 15px; right: 20px; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <div id="coaContent">Loading...</div>
+            </div>
+        </div>
+
+
+
+
+        <div style="margin-top: 2rem;">
+            <h3>Blockchain Audit Log</h3>
+            <p style="color: grey; margin-bottom: 2rem;">Real-time event stream from the pharmaceutical supply
+                chain.
+            </p>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                            <th style="padding: 12px;">Timestamp</th>
+                            <th style="padding: 12px;">Batch ID</th>
+                            <th style="padding: 12px;">Action</th>
+                            <th style="padding: 12px;">User</th>
+                            <th style="padding: 12px;">Blockchain Hash</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 15px 12px; white-space: nowrap;">{{
+                                event.timestamp.strftime('%Y-%m-%d
+                                %H:%M') }}</td>
+                            <td style="padding: 15px 12px;"><strong>{{ event.batch_id }}</strong></td>
+                            <td style="padding: 15px 12px;">
+                                {% if 'TAMPER' in event.action_type %}
+                                <span
+                                    style="background: #fee2e2; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid #fecaca; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    ⛔ {{ event.action_type }}
+                                </span>
+                                {% elif 'PRODUCED' in event.action_type %}
+                                <span
+                                    style="background: #e0f2fe; color: #075985; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #bae6fd; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    📦 {{ event.action_type }}
+                                </span>
+                                {% elif 'CNF' in event.action_type %}
+                                <span
+                                    style="background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #86efac; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    🚛 {{ event.action_type }}
+                                </span>
+                                {% elif 'DISPATCHED_TO_RETAILER' in event.action_type %}
+                                <span
+                                    style="background: #fce7f3; color: #be185d; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #fbcfe8; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    🚚 {{ event.action_type }}
+                                </span>
+                                {% elif 'DISTRIBUTOR' in event.action_type %}
+                                <span
+                                    style="background: #ffedd5; color: #9a3412; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #fed7aa; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    🏭 {{ event.action_type }}
+                                </span>
+                                {% elif 'RETAIL' in event.action_type or 'STORE' in event.action_type or 'CONSUMER'
+                                in
+                                event.action_type %}
+                                <span
+                                    style="background: #f3e8ff; color: #6b21a8; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #d8b4fe; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                    💊 {{ event.action_type }}
+                                </span>
+                                {% else %}
+                                <span
+                                    style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #cbd5e1;">
+                                    📝 {{ event.action_type }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px 12px;">{{ event.username or 'System' }}</td>
+                            <td style="padding: 15px 12px;">
+                                <small style="font-family: monospace; color: grey;">
+                                    {{ (event.blockchain_tx_id[:20] + '...') if event.blockchain_tx_id else 'Pending
+                                    Registration' }}
+                                </small>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="padding: 2rem; text-align: center; color: grey;">No events
+                                recorded
+                                yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- C&F AGENT -->
+    {% if role == "C&F Agent" %}
+    <div class="main-card">
+        <div class="dashboard-title">
+            <div style="background: #3b82f6; padding: 8px; border-radius: 8px; color: white;">
+                <i data-feather="truck"></i>
+            </div>
+            C&F Department Portal
+        </div>
+
+        <div
+            style="padding: 2rem; background: #f0f7ff; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 2rem;">
+            <h3 style="margin-top: 0; color: #1e3a8a; margin-bottom: 1.5rem;">Update Status</h3>
+            <p style="color: #1e40af; margin-bottom: 1.5rem;">Scan or enter batch ID to update its logistics status.
+            </p>
+
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div class="form-group">
+                    <label>Scan QR Code (Enter Batch ID)</label>
+                    <div class="input-with-button">
+                        <input type="text" id="scanInput" placeholder="Scan or type Batch ID...">
+                        <button class="qr-scan-btn" onclick="triggerQRScan('scanInput')">
+                            <i data-feather="maximize"></i> Scan QR
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Action</label>
+                    <select id="actionType">
+                        <option value="RECEIVED_AT_CNF">RECEIVED AT CNF</option>
+                        <option value="DISPATCHED_TO_DISTRIBUTOR">DISPATCHED TO DISTRIBUTOR</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="logQuantity" placeholder="e.g. 900">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Operator ID</label>
+                        <input type="text" id="logOperatorId" placeholder="e.g. OP-101">
+                    </div>
+                    <div class="form-group">
+                        <label>Operator Name</label>
+                        <input type="text" id="logOperatorName" placeholder="e.g. Alice">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>📍 Latitude</label>
+                        <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
+                            placeholder="Auto">
+                    </div>
+                    <div class="form-group">
+                        <label>📍 Longitude</label>
+                        <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
+                            placeholder="Auto">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>🚛 Vehicle ID</label>
+                    <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                    <label>Operator ID</label>
-                    <input type="text" id="logOperatorId" placeholder="e.g. OP-101">
+                    <label>📥 Ingress Quality</label>
+                    <input type="text" id="logIngress" placeholder="Passed / Failed">
                 </div>
                 <div class="form-group">
-                    <label>Operator Name</label>
-                    <input type="text" id="logOperatorName" placeholder="e.g. Alice">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>📍 Latitude</label>
-                    <input type="text" id="geoLat" readonly style="background: #f1f5f9; color: #64748b;"
-                        placeholder="Auto">
-                </div>
-                <div class="form-group">
-                    <label>📍 Longitude</label>
-                    <input type="text" id="geoLong" readonly style="background: #f1f5f9; color: #64748b;"
-                        placeholder="Auto">
+                    <label>📤 Egress Quality</label>
+                    <input type="text" id="logEgress" placeholder="Passed / Failed">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>🚛 Vehicle ID</label>
-                <input type="text" id="logVehicle" placeholder="MH-31-CB-1234">
+                <label>Notes</label>
+                <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai hub">
             </div>
-        </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-                <label>📥 Ingress Quality</label>
-                <input type="text" id="logIngress" placeholder="Passed / Failed">
-            </div>
-            <div class="form-group">
-                <label>📤 Egress Quality</label>
-                <input type="text" id="logEgress" placeholder="Passed / Failed">
-            </div>
+            <button onclick="submitAction()" class="action-btn" style="background: #3b82f6;">Update Status & Mine
+                Block
+                ⛏️</button>
+            <div id="actionResult" style="margin-top:15px;"></div>
         </div>
-
-        <div class="form-group">
-            <label>Notes</label>
-            <input type="text" id="actionNote" placeholder="e.g. Received at Mumbai hub">
-        </div>
-
-        <button onclick="submitAction()" class="action-btn" style="background: #3b82f6;">Update Status & Mine Block
-            ⛏️</button>
-        <div id="actionResult" style="margin-top:15px;"></div>
     </div>
-</div>
 </div>
 
 <script>

@@ -29,6 +29,15 @@ def verify_product_endpoint(request: VerifyRequest, db: RealDictCursor = Depends
                 timestamp=datetime.now()
              )
         
+        # --- NEW: Red Flag Protocol ---
+        if security_check['status'] == "SECURITY_ALERT":
+             return VerificationResponse(
+                status="UNDER_INVESTIGATION",
+                message=security_check['message'],
+                timestamp=datetime.now()
+             )
+        # ------------------------------
+        
         if security_check['status'] in ["UNKNOWN", "NOT_FOUND"]:
              raise HTTPException(status_code=404, detail=security_check['message'])
 

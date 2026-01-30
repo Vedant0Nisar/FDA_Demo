@@ -52,7 +52,18 @@ CREATE TABLE IF NOT EXISTS batches (
     exp_date DATE NOT NULL,
     batch_size INTEGER,
     current_status VARCHAR(50) DEFAULT 'CREATED', -- 'CREATED', 'IN_QA', 'RELEASED', 'SHIPPED', 'RECALLED'
+    fda_approval_status VARCHAR(50) DEFAULT 'PENDING', -- 'PENDING', 'APPROVED', 'REJECTED'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS coa_certificates (
+    coa_id SERIAL PRIMARY KEY,
+    batch_id VARCHAR(50) REFERENCES batches(batch_id),
+    analysis_results JSONB, -- { "assay": "99.2%", "ph": "6.5" ... }
+    signature_path TEXT, -- URL/Path to digital signature image
+    conclusion TEXT, -- "Complies with USP standards"
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_released BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS shipments (

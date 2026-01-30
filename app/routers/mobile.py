@@ -158,9 +158,24 @@ def report_fraud(request: MobileReportRequest, db: RealDictCursor = Depends(get_
     )
     alert_id = db.fetchone()["alert_id"]
     
+    # --- NEW: Red Flag Protocol ---
+    # Immediately update status to UNDER_INVESTIGATION
+    db.execute(
+        "UPDATE batches SET current_status = 'UNDER_INVESTIGATION' WHERE batch_id = %s",
+        (request.batch_id,)
+    )
+
+    # Log Security Alert Event
+    from psycopg2.extras import Json
+    db.execute("""
+        INSERT INTO batch_events (batch_id, user_id, department_id, action_type, description, metadata, blockchain_tx_id)
+        VALUES (%s, 1, 1, 'SECURITY_ALERT', 'Inspector flagged batch as potentially fraudulent', %s, 'N/A')
+    """, (request.batch_id, Json({"node_id": request.node_id, "alert_id": alert_id})))
+    # ------------------------------
+    
     return {
         "status": "success",
-        "message": "Fraud report submitted successfully",
+        "message": "Fraud report submitted. Batch status updated to UNDER_INVESTIGATION.",
         "alert_id": alert_id
     }
 

@@ -3,8 +3,9 @@ from datetime import datetime
 from fastapi.encoders import jsonable_encoder
 from psycopg2.extras import RealDictCursor
 from app.database import get_db
-from app.models import BatchCreateRequest, BatchResponse, BatchEventRequest
+from app.models import BatchCreateRequest, BatchResponse, BatchEventRequest, COACreateRequest, FDAApprovalRequest
 from app.services.blockchain import BlockchainService
+from app.services.coa_service import COAService
 import logging
 
 router = APIRouter(
@@ -78,8 +79,8 @@ def create_batch(request: BatchCreateRequest, db: RealDictCursor = Depends(get_d
         # 5. Insert into Database
         with open("debug_log.txt", "a") as f: f.write("DEBUG: Inserting Batch\\n"); f.flush()
         db.execute("""
-            INSERT INTO batches (batch_id, product_id, manufacturer_id, mfg_date, exp_date, batch_size, current_status)
-            VALUES (%s, %s, %s, %s, %s, %s, 'CREATED')
+            INSERT INTO batches (batch_id, product_id, manufacturer_id, mfg_date, exp_date, batch_size, current_status, fda_approval_status)
+            VALUES (%s, %s, %s, %s, %s, %s, 'QUARANTINE', 'PENDING')
         """, (request.batch_id, prod['product_id'], mfg['manufacturer_id'], request.mfg_date, request.exp_date, request.batch_size))
 
         # 6. Log Genesis Event
@@ -111,7 +112,7 @@ def create_batch(request: BatchCreateRequest, db: RealDictCursor = Depends(get_d
         
         return BatchResponse(
             batch_id=request.batch_id,
-            current_status='CREATED',
+            current_status='QUARANTINE',
             hash=tx_hash,
             qr_code_base64=qr_base64
         )
@@ -132,6 +133,16 @@ def add_batch_event(batch_id: str, event: BatchEventRequest, db: RealDictCursor 
     batch = db.fetchone()
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
+
+    # 1.1 Check Blocked Statuses
+    blocked_statuses = ['QUARANTINE', 'UNDER_INVESTIGATION', 'REJECTED', 'RECALLED']
+    if batch['current_status'] in blocked_statuses:
+        # Check if the user is an FDA Admin trying to resolve it? (Future enhancement)
+        # For now, strict block.
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Action Blocked: Batch is currently {batch['current_status']}. Please contact FDA/Compliance."
+        )
         
     # 1.5 Security Integrity Check (Fail-Closed)
     from app.services.verification_service import VerificationService
@@ -232,3 +243,33 @@ def get_batch_timeline(batch_id: str, db: RealDictCursor = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Batch not found or no events logged.")
         
     return {"batch_id": batch_id, "events": events}
+
+@router.post("/{batch_id}/coa", status_code=status.HTTP_201_CREATED)
+def create_coa(batch_id: str, request: COACreateRequest, db: RealDictCursor = Depends(get_db)):
+    try:
+        # Verify batch exists and is in QUARANTINE (or Created, but we moved to Quarantine)
+        db.execute("SELECT current_status FROM batches WHERE batch_id = %s", (batch_id,))
+        batch = db.fetchone()
+        if not batch:
+            raise HTTPException(status_code=404, detail="Batch not found")
+            
+        COAService.create_coa(batch_id, request.dict(), db)
+        return {"status": "COA Generated", "batch_id": batch_id}
+    except Exception as e:
+        with open("debug_log.txt", "a") as f:
+            f.write(f"\n[COA ERROR] {str(e)}\n")
+            import traceback
+            traceback.print_exc(file=f)
+        raise e
+
+@router.post("/{batch_id}/approve")
+def approve_batch(batch_id: str, request: FDAApprovalRequest, db: RealDictCursor = Depends(get_db)):
+    COAService.update_approval_status(batch_id, request.status, db)
+    return {"status": "Updated", "approval_status": request.status}
+
+@router.get("/{batch_id}/coa")
+def get_coa_details(batch_id: str, db: RealDictCursor = Depends(get_db)):
+    coa = COAService.get_coa(batch_id, db)
+    if not coa:
+        raise HTTPException(status_code=404, detail="COA not pending or found for this batch")
+    return coa

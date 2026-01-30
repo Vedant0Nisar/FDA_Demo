@@ -27,15 +27,20 @@
                     <span class="logo-separator">X</span>
                     <img src="/static/assets/MFDA.png" alt="Logo" class="brand-logo">
                 </div>
-                <h1 class="brand-title">Maha-Medicines Traceability System</h1>
+
+                <div class="brand-subtitle">
+                    <h1 class="brand-title">Maha-Medicines Traceability System</h1>
+                    Complete End-to-End Drug Traceability, Enforcement & Laboratory Management
+                    System
+                    for Food and Drugs
+                </div>
             </div>
             <div class="live-indicator">
                 <span class="pulse-dot"></span>
                 <span class="indicator-text">Live Tracking Active</span>
             </div>
         </div>
-        <div class="brand-subtitle">Complete End-to-End Drug Traceability, Enforcement & Laboratory Management System
-            for Food and Drugs</div>
+
     </header>
 
     <!-- Role Navigation -->
@@ -46,7 +51,9 @@
         <a href="/manufacturer" class="role-pill {% if role == 'Manufacturer' %}active{% endif %}">
             <i data-feather="box"></i> Manufacturer
         </a>
-
+        <a href="/fda_verification" class="role-pill {% if role == 'FDA Verification' %}active{% endif %}">
+            <i data-feather="check-circle"></i> FDA Verification
+        </a>
         <a href="/fda_cdf" class="role-pill {% if role == 'FDA CDF' %}active{% endif %}">
             <i data-feather="file-text"></i> FDA Traceability
         </a>
@@ -69,7 +76,7 @@
         {% endblock %}
     </div>
 
-    <footer class="main-footer">
+    <!-- <footer class="main-footer">
         <div class="container footer-content">
             <div class="footer-text-primary">
                 &copy; 2026 MAHA-Medicines. All rights reserved.
@@ -83,11 +90,75 @@
                 protected. All rights reserved.
             </div>
         </div>
+    </footer> -->
+    <footer class="main-footer"
+        style="padding: 5px 0; border-top: 1px solid #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff;">
+        <div class="container footer-content-wrapper"
+            style="display: flex; align-items: center; gap: 25px; margin: 0 auto; padding: 0 0px;">
+
+            <div class="footer-logo-box" style="flex-shrink: 0;">
+                <img src="static/assets/vgipl.png" alt="MAHA-Medicines Logo"
+                    style="height: 55px; width: auto; display: block; object-fit: contain;">
+            </div>
+
+            <div class="footer-vertical-line"
+                style="width: 1.5px; height: 50px; background-color: #d1d1d1; align-self: center;"></div>
+
+            <div class="footer-text-box"
+                style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div class="footer-text-primary" style="font-size: 15px; color: #222;  font-weight: 500;">
+                    &copy; 2026 MAHA-Medicines. All rights reserved.
+                    <span class="footer-separator" style="margin: 0 8px; color: #ccc;">|</span>
+                    <a href="#" class="footer-link"
+                        style="color: #0056b3; text-decoration: none; font-weight: 400;">Privacy Policy</a> &bull;
+                    <a href="#" class="footer-link"
+                        style="color: #0056b3; text-decoration: none; font-weight: 400; margin-left: 5px;">Terms of
+                        Use</a> &bull;
+                    <a href="#" class="footer-link"
+                        style="color: #0056b3; text-decoration: none; font-weight: 400; margin-left: 5px;">Support</a>
+                </div>
+                <div class="footer-text-secondary"
+                    style="font-size: 13px; color: #666; line-height: 1.6; max-width: 800px;">
+                    State Emblem of Maharashtra and Food and Drug Administration of Maharashtra are trademark/copyright
+                    protected. All rights reserved.
+                </div>
+            </div>
+
+        </div>
     </footer>
 
     <!-- Hidden File Input for QR Scanning -->
     <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="handleQRUpload(this)">
 
+    <script>
+        // Smart Sticky Header Logic
+        let lastScrollTop = 0;
+        const delta = 5;
+        const navbarHeight = document.querySelector('.main-header').offsetHeight;
+
+        window.addEventListener('scroll', function () {
+            let st = window.scrollY;
+
+            // Make sure they scroll more than delta
+            if (Math.abs(lastScrollTop - st) <= delta)
+                return;
+
+            // If they scrolled down and are past the navbar, add class .nav-up.
+            if (st > lastScrollTop && st > navbarHeight) {
+                // Scroll Down
+                document.querySelector('.main-header').classList.add('nav-up');
+                document.querySelector('.role-nav').classList.add('nav-up');
+            } else {
+                // Scroll Up
+                if (st + window.innerHeight < document.body.scrollHeight) {
+                    document.querySelector('.main-header').classList.remove('nav-up');
+                    document.querySelector('.role-nav').classList.remove('nav-up');
+                }
+            }
+
+            lastScrollTop = st;
+        });
+    </script>
     <script src="/static/app.js"></script>
     <script>
         feather.replace();

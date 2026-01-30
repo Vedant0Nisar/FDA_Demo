@@ -40,7 +40,15 @@ class BatchEventRequest(BaseModel):
     operator_id: Optional[str] = None
     operator_name: Optional[str] = None
 
+class COACreateRequest(BaseModel):
+    batch_id: str
+    analysis_results: Dict[str, Any]
+    signature_base64: str = Field(..., description="Base64 encoded string of the signature image")
+    conclusion: str = "Complies with specifications"
 
+class FDAApprovalRequest(BaseModel):
+    status: str = Field(..., description="APPROVED or REJECTED")
+    comments: Optional[str] = None
 # --- Responses ---
 class VerificationResponse(BaseModel):
     status: str # AUTHENTIC, COUNTERFEIT, WARNING

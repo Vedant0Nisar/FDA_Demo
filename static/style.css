@@ -145,17 +145,45 @@ body {
 .role-nav {
     display: flex;
     justify-content: center;
+    /* Align start to allow scrolling from left */
+    align-items: center;
     gap: 12px;
     padding: 1rem 2rem;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(15px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     position: sticky;
-    top: 105px;
+    top: 93px;
     /* Adjust based on new header height */
     z-index: 999;
     margin-bottom: 2.5rem;
     box-shadow: 0 4px 15px -1px rgba(0, 0, 0, 0.05);
+
+    /* Scrollable */
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Hide scrollbar Firefox */
+}
+
+.role-nav::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar Chrome/Safari */
+}
+
+/* Ensure header is always sticky without transform */
+.main-header {
+    background: var(--header-gradient);
+    color: white;
+    padding: 1rem 3rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .role-pill {
@@ -498,7 +526,7 @@ body {
 .footer-text-primary {
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-top: 7px;
     font-size: 0.9rem;
 }
 

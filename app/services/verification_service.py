@@ -13,11 +13,20 @@ class VerificationService:
         Returns a dict with status and message.
         """
         # 1. Fetch from Database
-        db_cursor.execute("SELECT mfg_date, exp_date, batch_size FROM batches WHERE batch_id = %s", (batch_id,))
+        db_cursor.execute("SELECT mfg_date, exp_date, batch_size, current_status FROM batches WHERE batch_id = %s", (batch_id,))
         db_batch = db_cursor.fetchone()
         
         if not db_batch:
             return {"status": "NOT_FOUND", "message": "Batch ID not found in Database."}
+
+        # --- NEW: Red Flag Protocol ---
+        if db_batch['current_status'] == 'UNDER_INVESTIGATION':
+            logger.critical(f"SECURITY BLOCK: Batch {batch_id} is UNDER_INVESTIGATION.")
+            return {
+                "status": "SECURITY_ALERT", 
+                "message": "🚨 SECURITY ALERT: This batch has been flagged by FDA Inspectors. Do not accept/sell/consume."
+            }
+        # ------------------------------
 
         # 2. Fetch from Blockchain
         try:
